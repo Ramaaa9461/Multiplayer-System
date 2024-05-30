@@ -10,6 +10,11 @@
 [Ll]ogs/
 [Uu]ser[Ss]ettings/
 
+# Ignorar la propia carpeta
+Multiplayer_clone_0/
+Multiplayer_clone_1/
+Multiplayer_clone_2/
+
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
 /[Mm]emoryCaptures/
