@@ -1,8 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Net;
-using UnityEngine;
 
 public class NetworkClient : NetworkEntity
 {
@@ -52,7 +50,7 @@ public class NetworkClient : NetworkEntity
         
         connection = new UdpConnection(ip, port, this);
 
-        ClientToServerNetHandShake handShakeMesage = new(MessagePriority.Default, (UdpConnection.IPToLong(ip), port, name));
+        ClientToServerNetHandShake handShakeMesage = new(MessagePriority.NonDisposable, (UdpConnection.IPToLong(ip), port, name));
         SendToServer(handShakeMesage.Serialize());
     }
 
@@ -64,7 +62,7 @@ public class NetworkClient : NetworkEntity
     /// <param name="clientName">The name of the new client.</param>
     public override void AddClient(IPEndPoint ip, int newClientID, string clientName)
     {
-        Debug.Log("Adding Client: " + ip.Address);
+       Console.WriteLine("Adding Client: " + ip.Address);
 
         checkActivity.AddClientForList(newClientID);
         gm.OnNewPlayer?.Invoke(newClientID);
@@ -78,7 +76,7 @@ public class NetworkClient : NetworkEntity
     {
         gm.OnRemovePlayer?.Invoke(idToRemove);
 
-        Debug.Log("Removing client: " + idToRemove);
+        Console.WriteLine("Removing client: " + idToRemove);
         checkActivity.RemoveClientForList(idToRemove);
         players.Remove(idToRemove);
 
@@ -137,7 +135,7 @@ public class NetworkClient : NetworkEntity
 
                 for (int i = 0; i < playerList.Count; i++)
                 {
-                    Debug.Log(playerList[i].clientId + " - " + playerList[i].userName);
+                    Console.WriteLine(playerList[i].clientId + " - " + playerList[i].userName);
                     Player playerToAdd = new(playerList[i].clientId, playerList[i].userName);
                     players.Add(playerList[i].clientId, playerToAdd);
                     gm.OnNewPlayer?.Invoke(playerToAdd.id);
@@ -174,7 +172,7 @@ public class NetworkClient : NetworkEntity
                 NetIDMessage netDisconnection = new(data);
                 int playerID = netDisconnection.GetData();
 
-                Debug.Log("Remove player " + playerID);
+                Console.WriteLine("Remove player " + playerID);
                 RemoveClient(playerID);
 
                 break;

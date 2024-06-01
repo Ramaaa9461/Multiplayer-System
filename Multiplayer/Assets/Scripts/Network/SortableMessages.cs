@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using UnityEngine;
 
-public class SortableMessages
+public class SortableMessages //TODO: Reworkear para utilizar BitMatrix en vez de diccionarios anidados
 {
     GameManager gm;
     NetworkManager nm;

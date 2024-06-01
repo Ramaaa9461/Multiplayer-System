@@ -20,6 +20,13 @@ public class NetworkManager : MonoBehaviourSingleton<NetworkManager>
         get { return networkEntity is NetworkServer; }
         private set { }
     }
+    
+    DateTime appStartTime;
+
+    private void Start()
+    {
+        appStartTime = DateTime.UtcNow;
+    }
 
     public NetworkClient GetNetworkClient()
     {
@@ -43,7 +50,7 @@ public class NetworkManager : MonoBehaviourSingleton<NetworkManager>
 
     public void StartServer(int port)
     {
-        networkEntity = new NetworkServer(port);
+        networkEntity = new NetworkServer(port, appStartTime);
         onInitEntity?.Invoke();
         onInitPingPong?.Invoke();
     }

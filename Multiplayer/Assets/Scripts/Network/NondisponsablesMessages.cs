@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using UnityEngine;
 
-public class NondisponsablesMessages
+public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix en vez de diccionarios anidados
 {
     GameManager gm;
     NetworkManager nm;
@@ -70,36 +70,46 @@ public class NondisponsablesMessages
                 {
                     if (LastMessageBroadcastToClients.ContainsKey(server.ipToId[ip]))
                     {
-                        //Debug.Log("Se elimino el primer paquete de " + netConfirm.GetData() + " con el cliente " + nm.ipToId[ip]);
+                        var clientMessages = LastMessageBroadcastToClients[server.ipToId[ip]];
 
-                        if (MessagesHistory.ContainsKey(LastMessageBroadcastToClients[server.ipToId[ip]][netConfirm.GetData()].Peek()))
+                        if (clientMessages.ContainsKey(netConfirm.GetData()) && clientMessages[netConfirm.GetData()].Count > 0)
                         {
-                            LastMessageBroadcastToClients[server.ipToId[ip]][netConfirm.GetData()].Dequeue();
-                        }
-                        else
-                        {
-                            MessagesHistory.Add(LastMessageBroadcastToClients[server.ipToId[ip]][netConfirm.GetData()].Dequeue(), secondsToDeleteMessageHistory);
+                            byte[] message = clientMessages[netConfirm.GetData()].Peek();
+
+                            if (MessagesHistory.ContainsKey(message))
+                            {
+                                clientMessages[netConfirm.GetData()].Dequeue();
+                            }
+                            else
+                            {
+                                MessagesHistory.Add(clientMessages[netConfirm.GetData()].Dequeue(), secondsToDeleteMessageHistory);
+                            }
+
+                            //  Debug.Log("Confirm message with CLIENT " + server.clients[server.ipToId[ip]].id + " - " + MessageChecker.CheckMessageType(message)); ;
                         }
                     }
                 }
             }
             else
             {
-                //Debug.Log("Se elimino el primer paquete de " + netConfirm.GetData());
-
-                if (MessagesHistory.ContainsKey(LastMessageSendToServer[netConfirm.GetData()].Peek()))
+                if (LastMessageSendToServer.ContainsKey(netConfirm.GetData()) && LastMessageSendToServer[netConfirm.GetData()].Count > 0)
                 {
-                    LastMessageSendToServer[netConfirm.GetData()].Dequeue();
-                }
-                else
-                {
-                    MessagesHistory.Add(LastMessageSendToServer[netConfirm.GetData()].Dequeue(), secondsToDeleteMessageHistory);
-                }
+                    byte[] message = LastMessageSendToServer[netConfirm.GetData()].Peek();
 
+                    if (MessagesHistory.ContainsKey(message))
+                    {
+                        LastMessageSendToServer[netConfirm.GetData()].Dequeue();
+                    }
+                    else
+                    {
+                        MessagesHistory.Add(LastMessageSendToServer[netConfirm.GetData()].Dequeue(), secondsToDeleteMessageHistory);
+                    }
+
+                    // Debug.Log("Confirm message with SERVER " + " - " + MessageChecker.CheckMessageType(message)); ;
+                }
             }
         }
     }
-
 
     public void AddSentMessagesFromServer(byte[] data, int clientId) //Cada vez que haces un broadcast
     {
@@ -109,6 +119,8 @@ public class NondisponsablesMessages
 
             if ((messagePriority & MessagePriority.NonDisposable) != 0)
             {
+                Debug.Log("Add Sent Message SERVER to " + clientId + " - " + MessageChecker.CheckMessageType(data));
+
                 if (!LastMessageBroadcastToClients.ContainsKey(clientId))
                 {
                     LastMessageBroadcastToClients.Add(clientId, new Dictionary<MessageType, Queue<byte[]>>());
@@ -126,7 +138,7 @@ public class NondisponsablesMessages
         }
     }
 
-    public void AddSentMessagesFromClients(byte[] data)  
+    public void AddSentMessagesFromClients(byte[] data)
     {
         if (!nm.isServer)
         {
@@ -134,6 +146,8 @@ public class NondisponsablesMessages
 
             if ((messagePriority & MessagePriority.NonDisposable) != 0)
             {
+                Debug.Log("Add Sent Message CLIENT to SERVER" + " - " + MessageChecker.CheckMessageType(data));
+
                 MessageType messageType = MessageChecker.CheckMessageType(data);
 
                 if (!LastMessageSendToServer.ContainsKey(messageType))
@@ -145,7 +159,6 @@ public class NondisponsablesMessages
             }
         }
     }
-
 
     void AddNewClient(int clientID)
     {
@@ -181,9 +194,12 @@ public class NondisponsablesMessages
 
                         if (resendPackageCounterToClients[id][messageType] >= pingPong.GetLatencyFormServer() * 5)
                         {
-                            Debug.Log("Se envio el packete de nuevo hacia el cliente " + id);
-                            server.Broadcast(LastMessageBroadcastToClients[id][messageType].Peek(), server.clients[id].ipEndPoint);
-                            resendPackageCounterToClients[id][messageType] = 0;
+                            if (LastMessageBroadcastToClients[id][messageType].Count > 0)
+                            {
+                                Debug.Log("Se envio el packete de nuevo hacia el cliente " + id);
+                                server.Broadcast(LastMessageBroadcastToClients[id][messageType].Peek(), server.clients[id].ipEndPoint);
+                                resendPackageCounterToClients[id][messageType] = 0;
+                            }
                         }
                     }
                 }
@@ -199,14 +215,16 @@ public class NondisponsablesMessages
 
                     if (resendPackageCounterToServer[messageType] >= pingPong.GetLatencyFormServer() * 5)
                     {
-                        Debug.Log("Se envio el packete de nuevo hacia el server");
-                        nm.GetNetworkClient().SendToServer(LastMessageSendToServer[messageType].Peek());
-                        resendPackageCounterToServer[messageType] = 0;
+                        if (LastMessageSendToServer[messageType].Count > 0)
+                        {
+                            Debug.Log("Se envio el packete de nuevo hacia el server");
+                            nm.GetNetworkClient().SendToServer(LastMessageSendToServer[messageType].Peek());
+                            resendPackageCounterToServer[messageType] = 0;
+                        }
                     }
                 }
             }
         }
-
 
         if (MessagesHistory.Count > 0)
         {
@@ -229,4 +247,3 @@ public class NondisponsablesMessages
         }
     }
 }
-

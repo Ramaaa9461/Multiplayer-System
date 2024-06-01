@@ -74,7 +74,7 @@ public class PlayerController : MonoBehaviour
                 GameObject bullet = Instantiate(bulletPrefab, transform.position + direction, Quaternion.identity);
                 bullet.GetComponent<BulletController>().SetDirection(direction, clientID);
 
-                NetVector3 netBullet = new NetVector3(MessagePriority.Default, (nm.ClientID, direction));
+                NetVector3 netBullet = new NetVector3(MessagePriority.NonDisposable, (nm.ClientID, direction));
                 netBullet.CurrentMessageType = MessageType.BulletInstatiate;
                 netBullet.MessageOrder = bulletsMessageOrder;
                 nm.GetNetworkClient().SendToServer(netBullet.Serialize());

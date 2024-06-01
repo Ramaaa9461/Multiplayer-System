@@ -1,8 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Net;
-using UnityEngine;
 
 public class NetworkServer : NetworkEntity
 {
@@ -33,6 +31,8 @@ public class NetworkServer : NetworkEntity
 
     public readonly Dictionary<IPEndPoint, int> ipToId = new();
 
+    DateTime appStartTime;
+
     private int maxPlayersPerServer = 4;
     public bool matchOnGoing = false;
 
@@ -41,12 +41,13 @@ public class NetworkServer : NetworkEntity
     /// Starts the server on the specified port.
     /// </summary>
     /// <param name="port">The port to listen on.</param>
-    public NetworkServer(int port) : base()
+    public NetworkServer(int port, DateTime appStartTime) : base()
     {
         this.port = port;
         connection = new UdpConnection(port, this);
-
         checkActivity = new PingPong();
+
+        this.appStartTime = appStartTime;
     }
 
     /// <summary>
@@ -59,10 +60,10 @@ public class NetworkServer : NetworkEntity
     {
         if (!ipToId.ContainsKey(ip) && !clients.ContainsKey(newClientID))
         {
-            Debug.Log("Adding Client: " + ip.Address);
+            Console.WriteLine("Adding Client: " + ip.Address);
 
             ipToId[ip] = newClientID;
-            clients.Add(newClientID, new Client(ip, newClientID, Time.realtimeSinceStartup, clientName));
+            clients.Add(newClientID, new Client(ip, newClientID, (float)(DateTime.UtcNow - appStartTime).TotalSeconds, clientName));
             checkActivity.AddClientForList(newClientID);
             gm.OnNewPlayer?.Invoke(newClientID);
 
@@ -78,7 +79,7 @@ public class NetworkServer : NetworkEntity
         }
         else
         {
-            Debug.Log("It's a repeated Client");
+            Console.WriteLine("It's a repeated Client");
         }
     }
 
@@ -92,7 +93,7 @@ public class NetworkServer : NetworkEntity
 
         if (clients.ContainsKey(idToRemove))
         {
-            Debug.Log("Removing client: " + idToRemove);
+            Console.WriteLine("Removing client: " + idToRemove);
             checkActivity.RemoveClientForList(idToRemove);
             ipToId.Remove(clients[idToRemove].ipEndPoint);
             clients.Remove(idToRemove);
@@ -117,10 +118,6 @@ public class NetworkServer : NetworkEntity
                 {
                     checkActivity.ReciveClientToServerPingMessage(ipToId[ip]);
                     checkActivity.CalculateLatencyFromClients(ipToId[ip]);
-                }
-                else
-                {
-                    Debug.LogError("Fail Client ID");
                 }
 
                 break;

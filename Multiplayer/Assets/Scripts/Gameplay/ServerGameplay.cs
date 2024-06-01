@@ -46,7 +46,7 @@ public class ServerGameplay : MonoBehaviour
         if (nm.isServer && currentState == States.Lobby && counterInit)
         {
             Debug.Log("Mando el tiempo a nuevos clientes en el lobby");
-            NetUpdateNewPlayersTimer timer = new NetUpdateNewPlayersTimer(MessagePriority.Default, counter);
+            NetUpdateNewPlayersTimer timer = new NetUpdateNewPlayersTimer(MessagePriority.NonDisposable, counter);
             server.Broadcast(timer.Serialize(), server.clients[clientID].ipEndPoint);
         }
     }
@@ -99,7 +99,7 @@ public class ServerGameplay : MonoBehaviour
 
                         if (initLobby)
                         {
-                            NetUpdateTimer netUpdateLobbyTimer = new NetUpdateTimer(MessagePriority.Default, true);
+                            NetUpdateTimer netUpdateLobbyTimer = new NetUpdateTimer(MessagePriority.NonDisposable, true);
                             netUpdateLobbyTimer.CurrentMessageType = MessageType.UpdateLobbyTimer;
                             server.Broadcast(netUpdateLobbyTimer.Serialize());
                             initLobby = false;
@@ -120,7 +120,7 @@ public class ServerGameplay : MonoBehaviour
                     {
                         if (counterInit)
                         {
-                            NetUpdateTimer netUpdateLobbyTimer = new NetUpdateTimer(MessagePriority.Default, false);
+                            NetUpdateTimer netUpdateLobbyTimer = new NetUpdateTimer(MessagePriority.NonDisposable, false);
                             netUpdateLobbyTimer.CurrentMessageType = MessageType.UpdateLobbyTimer;
                             server.Broadcast(netUpdateLobbyTimer.Serialize());
 
@@ -140,7 +140,7 @@ public class ServerGameplay : MonoBehaviour
 
                     if (initGameplay)
                     {
-                        NetUpdateTimer netUpdateGameplayTimer = new NetUpdateTimer(MessagePriority.Default, true);
+                        NetUpdateTimer netUpdateGameplayTimer = new NetUpdateTimer(MessagePriority.NonDisposable, true);
                         netUpdateGameplayTimer.CurrentMessageType = MessageType.UpdateGameplayTimer;
                         server.Broadcast(netUpdateGameplayTimer.Serialize());
 
