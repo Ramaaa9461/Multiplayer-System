@@ -44,15 +44,15 @@ public class NetworkClient : NetworkEntity
     /// <param name="ip">The IP address of the server.</param>
     /// <param name="port">The port of the server.</param>
     /// <param name="name">The name of the client.</param>
-    public NetworkClient(IPAddress ip, int port, string name)
+    public NetworkClient(IPAddress ip, int port, string name) : base()
     {
         this.port = port;
         this.ipAddress = ip;
         this.userName = name;
-
+        
         connection = new UdpConnection(ip, port, this);
 
-        ClientToServerNetHandShake handShakeMesage = new(MessagePriority.NonDisposable, (UdpConnection.IPToLong(ip), port, name));
+        ClientToServerNetHandShake handShakeMesage = new(MessagePriority.Default, (UdpConnection.IPToLong(ip), port, name));
         SendToServer(handShakeMesage.Serialize());
     }
 
@@ -84,6 +84,8 @@ public class NetworkClient : NetworkEntity
 
         if (clientID == idToRemove)
         {
+            gm.RemoveAllPlayers();
+            checkActivity = null;
             NetworkScreen.Instance.SwitchToMenuScreen();
         }
     }
@@ -112,12 +114,21 @@ public class NetworkClient : NetworkEntity
                 ServerToClientHandShake netGetClientID = new(data);
                 List<(int clientId, string userName)> playerList = netGetClientID.GetData();
 
-                checkActivity ??= new PingPong();
+                if (checkActivity == null)
+                {
+                    checkActivity = new();
+                    NetworkManager.Instance.onInitPingPong?.Invoke();
+                }
 
                 for (int i = 0; i < playerList.Count; i++) // First verify which client am I
                 {
                     if (playerList[i].userName == userName)
                     {
+                        if (NetworkScreen.Instance.isInMenu)
+                        {
+                            NetworkScreen.Instance.SwitchToChatScreen();
+                        }
+
                         clientID = playerList[i].clientId;
                     }
                 }
@@ -233,7 +244,7 @@ public class NetworkClient : NetworkEntity
     /// <summary>
     /// Handles the cleanup when the application is about to quit.
     /// </summary>
-    void OnApplicationQuit()
+    public override void  OnApplicationQuit()
     {
         // Notify the server about the client's disconnection
         NetIDMessage netDisconnection = new(MessagePriority.Default, clientID);

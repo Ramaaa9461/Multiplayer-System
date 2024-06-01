@@ -41,7 +41,7 @@ public class NetworkServer : NetworkEntity
     /// Starts the server on the specified port.
     /// </summary>
     /// <param name="port">The port to listen on.</param>
-    public NetworkServer(int port)
+    public NetworkServer(int port) : base()
     {
         this.port = port;
         connection = new UdpConnection(port, this);
@@ -307,7 +307,7 @@ public class NetworkServer : NetworkEntity
     /// <summary>
     /// Handles the cleanup when the application is about to quit.
     /// </summary>
-    void OnApplicationQuit()
+   public override void OnApplicationQuit()
     {
         // Notify all clients about the server's disconnection and close the server
         NetErrorMessage netErrorMessage = new("Lost Connection To Server");
@@ -329,6 +329,8 @@ public class NetworkServer : NetworkEntity
             Broadcast(netDisconnection.Serialize());
             RemoveClient(clientId);
         }
+
+        NetworkScreen.Instance.SwitchToMenuScreen();
     }
 
     /// <summary>

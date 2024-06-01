@@ -55,7 +55,7 @@ public class GameManager : MonoBehaviourSingleton<GameManager>
         {
             pc.clientID = index;
 
-            if (index != nm.actualClientId)
+            if (index != nm.ClientID)
             {
                 pc.currentPlayer = false;
             }
@@ -78,7 +78,7 @@ public class GameManager : MonoBehaviourSingleton<GameManager>
             Destroy(playerList[index]);
             playerList.Remove(index);
 
-            if (!nm.isServer && index == nm.actualClientId)
+            if (!nm.isServer && index == nm.ClientID)
             {
                 spawnCounter = 0;
                 RemoveAllPlayers();

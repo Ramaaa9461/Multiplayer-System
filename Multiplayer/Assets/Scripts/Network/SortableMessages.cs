@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using UnityEngine;
 
-public class SorteableMessages
+public class SortableMessages
 {
     GameManager gm;
     NetworkManager nm;
@@ -11,12 +11,12 @@ public class SorteableMessages
     Dictionary<int, Dictionary<MessageType, int>> OrderLastMessageReciveFromServer;
     Dictionary<int, Dictionary<MessageType, int>> OrderLastMessageReciveFromClients;
 
-    public SorteableMessages()
+    public SortableMessages()
     {
         nm = NetworkManager.Instance;
         gm = GameManager.Instance;
 
-        nm.OnRecievedMessage += OnRecievedData;
+        nm.onInitEntity += () => nm.networkEntity.OnReceivedMessage += OnRecievedData;
 
         gm.OnNewPlayer += AddNewClient;
         gm.OnRemovePlayer += RemoveClient;
@@ -36,17 +36,19 @@ public class SorteableMessages
 
             if (nm.isServer)
             {
-                if (nm.ipToId.ContainsKey(ip))
+                NetworkServer server = nm.GetNetworkServer();
+
+                if (server.ipToId.ContainsKey(ip))
                 {
-                    if (OrderLastMessageReciveFromClients.ContainsKey(nm.ipToId[ip]))
+                    if (OrderLastMessageReciveFromClients.ContainsKey(server.ipToId[ip]))
                     {
-                        if (!OrderLastMessageReciveFromClients[nm.ipToId[ip]].ContainsKey(messageType))
+                        if (!OrderLastMessageReciveFromClients[server.ipToId[ip]].ContainsKey(messageType))
                         {
-                            OrderLastMessageReciveFromClients[nm.ipToId[ip]].Add(messageType, 0);
+                            OrderLastMessageReciveFromClients[server.ipToId[ip]].Add(messageType, 0);
                         }
                         else
                         {
-                            OrderLastMessageReciveFromClients[nm.ipToId[ip]][messageType]++;
+                            OrderLastMessageReciveFromClients[server.ipToId[ip]][messageType]++;
                         }
                     }
                 }

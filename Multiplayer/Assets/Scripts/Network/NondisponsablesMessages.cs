@@ -24,9 +24,9 @@ public class NondisponsablesMessages
         nm = NetworkManager.Instance;
         gm = GameManager.Instance;
 
-        pingPong = nm.checkActivity;
+        nm.onInitPingPong += () => pingPong = nm.networkEntity.checkActivity;
 
-        nm.OnRecievedMessage += OnRecievedData;
+        nm.onInitEntity += () => nm.networkEntity.OnReceivedMessage += OnRecievedData;
 
         gm.OnNewPlayer += AddNewClient;
         gm.OnRemovePlayer += RemoveClient;
@@ -50,11 +50,11 @@ public class NondisponsablesMessages
 
             if (nm.isServer)
             {
-                nm.Broadcast(netConfirmMessage.Serialize(), ip);
+                nm.GetNetworkServer().Broadcast(netConfirmMessage.Serialize(), ip);
             }
             else
             {
-                nm.SendToServer(netConfirmMessage.Serialize());
+                nm.GetNetworkClient().SendToServer(netConfirmMessage.Serialize());
             }
         }
 
@@ -64,19 +64,21 @@ public class NondisponsablesMessages
 
             if (nm.isServer)
             {
-                if (nm.ipToId.ContainsKey(ip))
+                NetworkServer server = nm.GetNetworkServer();
+
+                if (server.ipToId.ContainsKey(ip))
                 {
-                    if (LastMessageBroadcastToClients.ContainsKey(nm.ipToId[ip]))
+                    if (LastMessageBroadcastToClients.ContainsKey(server.ipToId[ip]))
                     {
                         //Debug.Log("Se elimino el primer paquete de " + netConfirm.GetData() + " con el cliente " + nm.ipToId[ip]);
 
-                        if (MessagesHistory.ContainsKey(LastMessageBroadcastToClients[nm.ipToId[ip]][netConfirm.GetData()].Peek()))
+                        if (MessagesHistory.ContainsKey(LastMessageBroadcastToClients[server.ipToId[ip]][netConfirm.GetData()].Peek()))
                         {
-                            LastMessageBroadcastToClients[nm.ipToId[ip]][netConfirm.GetData()].Dequeue();
+                            LastMessageBroadcastToClients[server.ipToId[ip]][netConfirm.GetData()].Dequeue();
                         }
                         else
                         {
-                            MessagesHistory.Add(LastMessageBroadcastToClients[nm.ipToId[ip]][netConfirm.GetData()].Dequeue(), secondsToDeleteMessageHistory);
+                            MessagesHistory.Add(LastMessageBroadcastToClients[server.ipToId[ip]][netConfirm.GetData()].Dequeue(), secondsToDeleteMessageHistory);
                         }
                     }
                 }
@@ -167,6 +169,8 @@ public class NondisponsablesMessages
     {
         if (nm.isServer)
         {
+            NetworkServer server = nm.GetNetworkServer();
+
             if (resendPackageCounterToClients.Count > 0)
             {
                 foreach (int id in resendPackageCounterToClients.Keys)
@@ -178,7 +182,7 @@ public class NondisponsablesMessages
                         if (resendPackageCounterToClients[id][messageType] >= pingPong.GetLatencyFormServer() * 5)
                         {
                             Debug.Log("Se envio el packete de nuevo hacia el cliente " + id);
-                            nm.Broadcast(LastMessageBroadcastToClients[id][messageType].Peek(), nm.clients[id].ipEndPoint);
+                            server.Broadcast(LastMessageBroadcastToClients[id][messageType].Peek(), server.clients[id].ipEndPoint);
                             resendPackageCounterToClients[id][messageType] = 0;
                         }
                     }
@@ -196,7 +200,7 @@ public class NondisponsablesMessages
                     if (resendPackageCounterToServer[messageType] >= pingPong.GetLatencyFormServer() * 5)
                     {
                         Debug.Log("Se envio el packete de nuevo hacia el server");
-                        nm.SendToServer(LastMessageSendToServer[messageType].Peek());
+                        nm.GetNetworkClient().SendToServer(LastMessageSendToServer[messageType].Peek());
                         resendPackageCounterToServer[messageType] = 0;
                     }
                 }

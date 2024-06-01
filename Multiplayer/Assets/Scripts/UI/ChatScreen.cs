@@ -18,21 +18,21 @@ public class ChatScreen : MonoBehaviourSingleton<ChatScreen>
     {
         if (inputMessage.text != "")
         {
-            string name = NetworkManager.Instance.userName + ": ";
+            string name = NetworkManager.Instance.networkEntity.userName + ": ";
             str = name + str;
 
-            NetMessage netMessage = new NetMessage(MessagePriority.Sorteable | MessagePriority.NonDisposable, str.ToCharArray());
+            NetMessage netMessage = new NetMessage(MessagePriority.Default, str.ToCharArray());
             netMessage.MessageOrder = consoleMessageOrder;
             consoleMessageOrder++;
 
             if (NetworkManager.Instance.isServer)
             {
-                NetworkManager.Instance.Broadcast(netMessage.Serialize());
+                NetworkManager.Instance.GetNetworkServer().Broadcast(netMessage.Serialize());
                 messages.text += str + System.Environment.NewLine;
             }
             else
             {
-                NetworkManager.Instance.SendToServer(netMessage.Serialize());
+                NetworkManager.Instance.GetNetworkClient().SendToServer(netMessage.Serialize());
             }
 
             inputMessage.ActivateInputField();

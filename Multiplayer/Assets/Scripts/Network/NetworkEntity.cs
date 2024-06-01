@@ -18,7 +18,7 @@ public abstract class NetworkEntity : IReceiveData
     public Action<byte[], IPEndPoint> OnReceivedMessage;
 
     public string userName = "Server";
-    public int clientID = -1;
+    public int clientID = 0;
 
     public PingPong checkActivity;
 
@@ -34,6 +34,7 @@ public abstract class NetworkEntity : IReceiveData
     }
 
     public abstract void AddClient(IPEndPoint ip, int newClientID, string clientName);
+   
     public abstract void RemoveClient(int idToRemove);
 
     public abstract void OnReceiveData(byte[] data, IPEndPoint ipEndpoint);
@@ -53,6 +54,10 @@ public abstract class NetworkEntity : IReceiveData
     }
 
     protected abstract void UpdateChatText(byte[] data, IPEndPoint ip);
+    
     protected abstract void UpdatePlayerPosition(byte[] data);
+    
+    public abstract void OnApplicationQuit();
+
 
 }
