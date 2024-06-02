@@ -6,6 +6,8 @@ public class PingPong
 {
     NetworkEntity networkEntity;
 
+    public float deltaTime = 0;
+
     int timeUntilDisconnection = 5;
 
     private Dictionary<int, float> lastMessageReceivedFromClients = new Dictionary<int, float>(); //Lo usa el Server
@@ -17,7 +19,10 @@ public class PingPong
 
     private Dictionary<int, float> latencyFromClients = new Dictionary<int, float>(); //Lo usa el Server
     float latencyFromServer = 0;
+
+
     DateTime currentDateTime;
+    DateTime lastUpdateTime = DateTime.UtcNow;
 
     public PingPong(NetworkEntity networkEntity) 
     {
@@ -46,7 +51,11 @@ public class PingPong
 
     public void UpdateCheckActivity()
     {
-        sendMessageCounter += Time.deltaTime;
+        DateTime currentTime = DateTime.UtcNow;
+        deltaTime = (float)(currentTime - lastUpdateTime).TotalSeconds;
+        lastUpdateTime = currentTime;
+
+        sendMessageCounter += deltaTime;
 
         if (sendMessageCounter > secondsPerCheck) //Envio cada 1 segundo el mensaje
         {
@@ -54,11 +63,11 @@ public class PingPong
             sendMessageCounter = 0;
         }
 
-            CheckActivityCounter();
+            CheckActivityCounter(deltaTime);
             CheckTimeUntilDisconection();
     }
 
-    void CheckActivityCounter()
+    void CheckActivityCounter(float deltaTime)
     {
         if (networkEntity.isServer)
         {
@@ -66,12 +75,12 @@ public class PingPong
 
             foreach (var key in keys)
             {
-                lastMessageReceivedFromClients[key] += Time.deltaTime;
+                lastMessageReceivedFromClients[key] += deltaTime;
             }
         }
         else
         {
-            lastMessageReceivedFromServer += Time.deltaTime;
+            lastMessageReceivedFromServer += deltaTime;
         }
     }
 
@@ -96,7 +105,6 @@ public class PingPong
             {
                 NetIDMessage netDisconnection = new NetIDMessage(MessagePriority.Default, NetworkManager.Instance.ClientID);
                 networkEntity.GetNetworkClient().SendToServer(netDisconnection.Serialize());
-
                 networkEntity.GetNetworkClient().DisconectPlayer();
             }
         }

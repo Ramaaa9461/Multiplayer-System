@@ -188,7 +188,7 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
                 {
                     foreach (MessageType messageType in resendPackageCounterToClients[id].Keys)
                     {
-                        resendPackageCounterToClients[id][messageType] += Time.deltaTime;
+                        resendPackageCounterToClients[id][messageType] += pingPong.deltaTime;
 
                         if (resendPackageCounterToClients[id][messageType] >= pingPong.GetLatencyFormServer() * 5)
                         {
@@ -209,7 +209,7 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
             {
                 foreach (MessageType messageType in resendPackageCounterToServer.Keys)
                 {
-                    resendPackageCounterToServer[messageType] += Time.deltaTime;
+                    resendPackageCounterToServer[messageType] += pingPong.deltaTime;
 
                     if (resendPackageCounterToServer[messageType] >= pingPong.GetLatencyFormServer() * 5)
                     {
@@ -224,7 +224,7 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
             }
         }
 
-        if (MessagesHistory.Count > 0)
+        if (MessagesHistory.Count > 0 && pingPong != null)
         {
             List<byte[]> keysToRemove = new List<byte[]>(MessagesHistory.Count);
 
@@ -235,7 +235,7 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
 
             foreach (byte[] messageKey in keysToRemove)
             {
-                MessagesHistory[messageKey] -= Time.deltaTime;
+                MessagesHistory[messageKey] -= pingPong.deltaTime;
 
                 if (MessagesHistory[messageKey] <= 0)
                 {

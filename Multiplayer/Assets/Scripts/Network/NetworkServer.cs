@@ -36,19 +36,22 @@ public class NetworkServer : NetworkEntity
     private int maxPlayersPerServer = 4;
     public bool matchOnGoing = false;
 
+    IGameActions gameActions;
 
     /// <summary>
     /// Starts the server on the specified port.
     /// </summary>
     /// <param name="port">The port to listen on.</param>
-    public NetworkServer(int port, DateTime appStartTime) : base()
+    public NetworkServer(IGameActions gameActions, int port, DateTime appStartTime) : base()
     {
+        this.gameActions = gameActions;
         this.port = port;
+
         connection = new UdpConnection(port, this);
         checkActivity = new PingPong(this);
 
         onInitPingPong?.Invoke();
-        
+
         this.appStartTime = appStartTime;
     }
 
@@ -172,8 +175,8 @@ public class NetworkServer : NetworkEntity
             case MessageType.Error:
 
                 NetErrorMessage netErrorMessage = new(data);
-                NetworkScreen.Instance.SwitchToMenuScreen();
-                NetworkScreen.Instance.ShowErrorPanel(netErrorMessage.GetData());
+                gameActions.SwitchToMenuScreen();
+                gameActions.ShowErrorPanel(netErrorMessage.GetData());
                 connection.Close();
 
                 break;
@@ -192,7 +195,7 @@ public class NetworkServer : NetworkEntity
     {
         if (ipToId.ContainsKey(ip))
         {
-            nonDisposablesMessages.AddSentMessagesFromServer(data, ipToId[ip]);
+            nonDisposablesMessages?.AddSentMessagesFromServer(data, ipToId[ip]);
         }
         connection.Send(data, ip);
     }
@@ -207,7 +210,7 @@ public class NetworkServer : NetworkEntity
         {
             while (iterator.MoveNext())
             {
-                nonDisposablesMessages.AddSentMessagesFromServer(data, iterator.Current.Value.id);
+                nonDisposablesMessages?.AddSentMessagesFromServer(data, iterator.Current.Value.id);
                 connection.Send(data, iterator.Current.Value.ipEndPoint);
             }
         }
@@ -300,13 +303,13 @@ public class NetworkServer : NetworkEntity
 
         Broadcast(data);
 
-        ChatScreen.Instance.messages.text += messageText + System.Environment.NewLine;
+        gameActions.WriteChat(messageText + System.Environment.NewLine);
     }
 
     /// <summary>
     /// Handles the cleanup when the application is about to quit.
     /// </summary>
-   public override void OnApplicationQuit()
+    public override void OnApplicationQuit()
     {
         // Notify all clients about the server's disconnection and close the server
         NetErrorMessage netErrorMessage = new("Lost Connection To Server");
@@ -329,7 +332,7 @@ public class NetworkServer : NetworkEntity
             RemoveClient(clientId);
         }
 
-        NetworkScreen.Instance.SwitchToMenuScreen();
+        gameActions.SwitchToMenuScreen();
     }
 
     /// <summary>
@@ -341,7 +344,7 @@ public class NetworkServer : NetworkEntity
         NetVector3 netPosition = new(data);
         int clientId = netPosition.GetData().id;
 
-        gm.UpdatePlayerPosition(netPosition.GetData());
+        gameActions.UpdatePlayerPosition(netPosition.GetData());
 
         // Broadcast the player's position to all clients except the sender
         BroadcastPlayerPosition(clientId, data);

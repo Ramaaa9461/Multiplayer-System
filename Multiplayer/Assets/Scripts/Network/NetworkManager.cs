@@ -1,9 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
-using UnityEngine;
 
-public class NetworkManager : MonoBehaviourSingleton<NetworkManager>
+public interface IGameActions
+{
+    void SwitchToMenuScreen();
+    void WriteChat(string text);
+    void ShowErrorPanel(string errorText);
+    void UpdatePlayerPosition((int index, Vec3 newPosition) data);
+}
+
+public class NetworkManager : MonoBehaviourSingleton<NetworkManager> , IGameActions 
 {
 
     public NetworkEntity networkEntity;
@@ -50,7 +56,7 @@ public class NetworkManager : MonoBehaviourSingleton<NetworkManager>
 
     public void StartServer(int port)
     {
-        networkEntity = new NetworkServer(port, appStartTime);
+        networkEntity = new NetworkServer(this, port, appStartTime);
         onInitEntity?.Invoke();
 
     }
@@ -89,5 +95,27 @@ public class NetworkManager : MonoBehaviourSingleton<NetworkManager>
     private void OnApplicationQuit()
     {
         networkEntity.OnApplicationQuit();
+    }
+
+
+
+    public void SwitchToMenuScreen()
+    {
+        NetworkScreen.Instance.SwitchToMenuScreen();
+    }
+
+    public void WriteChat(string text)
+    {
+        ChatScreen.Instance.messages.text += text;
+    }
+
+    public void ShowErrorPanel(string errorText)
+    {
+        NetworkScreen.Instance.ShowErrorPanel(errorText);
+    }
+
+    public void UpdatePlayerPosition((int index, Vec3 newPosition) data )
+    {
+        GameManager.Instance.UpdatePlayerPosition(data);
     }
 }

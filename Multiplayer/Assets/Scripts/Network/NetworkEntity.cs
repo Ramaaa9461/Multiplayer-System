@@ -38,8 +38,6 @@ public abstract class NetworkEntity : IReceiveData
     public Action<int> OnNewPlayer;
     public Action<int> OnRemovePlayer;
 
-
-
     protected UdpConnection connection;
     public Action<byte[], IPEndPoint> OnReceivedMessage;
 
@@ -55,8 +53,9 @@ public abstract class NetworkEntity : IReceiveData
     public NetworkEntity()
     {
         gm = GameManager.Instance;
-        sortableMessages = new(this);
-        nonDisposablesMessages = new(this);
+
+        onInitPingPong += ()=> sortableMessages = new(this);
+        onInitPingPong += () => nonDisposablesMessages = new(this);
     }
 
     public abstract void AddClient(IPEndPoint ip, int newClientID, string clientName);

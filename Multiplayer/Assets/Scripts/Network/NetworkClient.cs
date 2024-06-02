@@ -218,7 +218,7 @@ public class NetworkClient : NetworkEntity
     /// <param name="data">The data to send.</param>
     public void SendToServer(byte[] data)
     {
-        nonDisposablesMessages.AddSentMessagesFromClients(data);
+        nonDisposablesMessages?.AddSentMessagesFromClients(data);
         connection.Send(data);
     }
 
