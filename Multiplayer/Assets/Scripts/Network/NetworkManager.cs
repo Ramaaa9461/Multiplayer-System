@@ -9,7 +9,7 @@ public class NetworkManager : MonoBehaviourSingleton<NetworkManager>
     public NetworkEntity networkEntity;
 
     public Action onInitEntity;
-    public Action onInitPingPong;
+
 
     public int ClientID
     {
@@ -52,7 +52,7 @@ public class NetworkManager : MonoBehaviourSingleton<NetworkManager>
     {
         networkEntity = new NetworkServer(port, appStartTime);
         onInitEntity?.Invoke();
-        onInitPingPong?.Invoke();
+
     }
 
     public void StartClient(IPAddress ip, int port, string name)

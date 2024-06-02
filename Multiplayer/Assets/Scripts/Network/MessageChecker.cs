@@ -1,27 +1,16 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
 
 public static class MessageChecker
 {
     public static MessagePriority CheckMessagePriority(byte[] message)
     {
-        int messagePriority = 0;
-
-        messagePriority = BitConverter.ToInt32(message, 4);
-
-        return (MessagePriority)messagePriority;
+        return (MessagePriority)BitConverter.ToInt32(message, 4);
     }
 
     public static MessageType CheckMessageType(byte[] message)
     {
-        int messageType = 0;
-
-        messageType = BitConverter.ToInt32(message, 0);
-
-        return (MessageType)messageType;
+        return (MessageType)BitConverter.ToInt32(message, 0);
     }
 
     public static byte[] SerializeString(char[] charArray)
@@ -61,7 +50,7 @@ public static class MessageChecker
 
         if (messageSum != message.Length)
         {
-            Debug.LogError("Message Type " + CheckMessageType(message) + " (" + CheckMessagePriority(message) + ") got corrupted.");
+            Console.Error.WriteLine("ERROR: Message Type " + CheckMessageType(message) + " (" + CheckMessagePriority(message) + ") got corrupted.");
             return false;
         }
 

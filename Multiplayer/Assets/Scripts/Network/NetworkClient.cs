@@ -32,8 +32,6 @@ public class NetworkClient : NetworkEntity
         get; private set;
     }
 
-
-
     private readonly Dictionary<int, Player> players = new();
 
     /// <summary>
@@ -47,7 +45,7 @@ public class NetworkClient : NetworkEntity
         this.port = port;
         this.ipAddress = ip;
         this.userName = name;
-        
+
         connection = new UdpConnection(ip, port, this);
 
         ClientToServerNetHandShake handShakeMesage = new(MessagePriority.NonDisposable, (UdpConnection.IPToLong(ip), port, name));
@@ -62,10 +60,10 @@ public class NetworkClient : NetworkEntity
     /// <param name="clientName">The name of the new client.</param>
     public override void AddClient(IPEndPoint ip, int newClientID, string clientName)
     {
-       Console.WriteLine("Adding Client: " + ip.Address);
+        Console.WriteLine("Adding Client: " + ip.Address);
 
         checkActivity.AddClientForList(newClientID);
-        gm.OnNewPlayer?.Invoke(newClientID);
+        OnNewPlayer?.Invoke(newClientID);
     }
 
     /// <summary>
@@ -74,7 +72,7 @@ public class NetworkClient : NetworkEntity
     /// <param name="idToRemove">The ID of the client to remove.</param>
     public override void RemoveClient(int idToRemove)
     {
-        gm.OnRemovePlayer?.Invoke(idToRemove);
+        OnRemovePlayer?.Invoke(idToRemove);
 
         Console.WriteLine("Removing client: " + idToRemove);
         checkActivity.RemoveClientForList(idToRemove);
@@ -93,7 +91,7 @@ public class NetworkClient : NetworkEntity
     /// </summary>
     /// <param name="data">The data received.</param>
     /// <param name="ip">The IP address of the sender.</param>
-    public override  void OnReceiveData(byte[] data, IPEndPoint ip)
+    public override void OnReceiveData(byte[] data, IPEndPoint ip)
     {
         // Invoke the event to notify listeners about the received message
         OnReceivedMessage?.Invoke(data, ip);
@@ -114,8 +112,8 @@ public class NetworkClient : NetworkEntity
 
                 if (checkActivity == null)
                 {
-                    checkActivity = new();
-                    NetworkManager.Instance.onInitPingPong?.Invoke();
+                    checkActivity = new(this);
+                    onInitPingPong?.Invoke();
                 }
 
                 for (int i = 0; i < playerList.Count; i++) // First verify which client am I
@@ -138,7 +136,7 @@ public class NetworkClient : NetworkEntity
                     Console.WriteLine(playerList[i].clientId + " - " + playerList[i].userName);
                     Player playerToAdd = new(playerList[i].clientId, playerList[i].userName);
                     players.Add(playerList[i].clientId, playerToAdd);
-                    gm.OnNewPlayer?.Invoke(playerToAdd.id);
+                    OnNewPlayer?.Invoke(playerToAdd.id);
                 }
 
                 break;
@@ -163,7 +161,7 @@ public class NetworkClient : NetworkEntity
             case MessageType.BulletInstatiate:
 
                 NetVector3 netBullet = new(data);
-                gm.OnInstantiateBullet?.Invoke(netBullet.GetData().id, netBullet.GetData().position);
+                OnInstantiateBullet?.Invoke(netBullet.GetData().id, netBullet.GetData().position);
 
                 break;
 
@@ -242,7 +240,7 @@ public class NetworkClient : NetworkEntity
     /// <summary>
     /// Handles the cleanup when the application is about to quit.
     /// </summary>
-    public override void  OnApplicationQuit()
+    public override void OnApplicationQuit()
     {
         // Notify the server about the client's disconnection
         NetIDMessage netDisconnection = new(MessagePriority.Default, clientID);

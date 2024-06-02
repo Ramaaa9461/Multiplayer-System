@@ -5,21 +5,19 @@ using UnityEngine;
 
 public class SortableMessages //TODO: Reworkear para utilizar BitMatrix en vez de diccionarios anidados
 {
-    GameManager gm;
-    NetworkManager nm;
+    NetworkEntity networkEntity;
 
     Dictionary<int, Dictionary<MessageType, int>> OrderLastMessageReciveFromServer;
     Dictionary<int, Dictionary<MessageType, int>> OrderLastMessageReciveFromClients;
 
-    public SortableMessages()
+    public SortableMessages(NetworkEntity networkEntity)
     {
-        nm = NetworkManager.Instance;
-        gm = GameManager.Instance;
+        this.networkEntity = networkEntity;
 
-        nm.onInitEntity += () => nm.networkEntity.OnReceivedMessage += OnRecievedData;
+        networkEntity.OnReceivedMessage += OnRecievedData;
 
-        gm.OnNewPlayer += AddNewClient;
-        gm.OnRemovePlayer += RemoveClient;
+        networkEntity.OnNewPlayer += AddNewClient;
+        networkEntity.OnRemovePlayer += RemoveClient;
 
         OrderLastMessageReciveFromClients = new Dictionary<int, Dictionary<MessageType, int>>();
         OrderLastMessageReciveFromServer = new Dictionary<int, Dictionary<MessageType, int>>();
@@ -34,9 +32,9 @@ public class SortableMessages //TODO: Reworkear para utilizar BitMatrix en vez d
         {
             MessageType messageType = MessageChecker.CheckMessageType(data);
 
-            if (nm.isServer)
+            if (networkEntity.isServer)
             {
-                NetworkServer server = nm.GetNetworkServer();
+                NetworkServer server = networkEntity.GetNetworkServer();
 
                 if (server.ipToId.ContainsKey(ip))
                 {
@@ -100,7 +98,7 @@ public class SortableMessages //TODO: Reworkear para utilizar BitMatrix en vez d
 
     void AddNewClient(int clientID)
     {
-        if (nm.isServer)
+        if (networkEntity.isServer)
         {
             OrderLastMessageReciveFromClients.Add(clientID, new Dictionary<MessageType, int>());
         }
@@ -115,7 +113,7 @@ public class SortableMessages //TODO: Reworkear para utilizar BitMatrix en vez d
 
     void RemoveClient(int clientID)
     {
-        if (nm.isServer)
+        if (networkEntity.isServer)
         {
             OrderLastMessageReciveFromClients.Remove(clientID);
         }

@@ -93,7 +93,7 @@ public class PlayerController : MonoBehaviour
     {
         NetVector3 netVector3 = new NetVector3(MessagePriority.Sorteable, (nm.ClientID, transform.position));
         netVector3.MessageOrder = positionMessageOrder;
-        NetworkManager.Instance.GetNetworkClient().SendToServer(netVector3.Serialize());
+        nm.GetNetworkClient().SendToServer(netVector3.Serialize());
         positionMessageOrder++;
     }
 

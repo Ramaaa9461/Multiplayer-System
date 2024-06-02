@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class PingPong
 {
+    NetworkEntity networkEntity;
+
     int timeUntilDisconnection = 5;
 
     private Dictionary<int, float> lastMessageReceivedFromClients = new Dictionary<int, float>(); //Lo usa el Server
@@ -17,8 +19,9 @@ public class PingPong
     float latencyFromServer = 0;
     DateTime currentDateTime;
 
-    public PingPong() 
+    public PingPong(NetworkEntity networkEntity) 
     {
+        this.networkEntity = networkEntity;
     }
 
     public void AddClientForList(int idToAdd)
@@ -57,7 +60,7 @@ public class PingPong
 
     void CheckActivityCounter()
     {
-        if (NetworkManager.Instance.isServer)
+        if (networkEntity.isServer)
         {
             var keys = new List<int>(lastMessageReceivedFromClients.Keys);
 
@@ -74,16 +77,16 @@ public class PingPong
 
     void CheckTimeUntilDisconection()
     {
-        if (NetworkManager.Instance.isServer)
+        if (networkEntity.isServer)
         {
             foreach (int clientID in lastMessageReceivedFromClients.Keys)
             {
                 if (lastMessageReceivedFromClients[clientID] > timeUntilDisconnection)
                 {
-                    NetworkManager.Instance.networkEntity.RemoveClient(clientID);
+                    networkEntity.RemoveClient(clientID);
 
                     NetIDMessage netDisconnection = new NetIDMessage(MessagePriority.Default, clientID);
-                    NetworkManager.Instance.GetNetworkServer().Broadcast(netDisconnection.Serialize());
+                    networkEntity.GetNetworkServer().Broadcast(netDisconnection.Serialize());
                 }
             }
         }
@@ -92,9 +95,9 @@ public class PingPong
             if (lastMessageReceivedFromServer > timeUntilDisconnection)
             {
                 NetIDMessage netDisconnection = new NetIDMessage(MessagePriority.Default, NetworkManager.Instance.ClientID);
-                NetworkManager.Instance.GetNetworkClient().SendToServer(netDisconnection.Serialize());
+                networkEntity.GetNetworkClient().SendToServer(netDisconnection.Serialize());
 
-                NetworkManager.Instance.GetNetworkClient().DisconectPlayer();
+                networkEntity.GetNetworkClient().DisconectPlayer();
             }
         }
     }
@@ -103,13 +106,13 @@ public class PingPong
     {
         NetPing netPing = new NetPing();
 
-        if (NetworkManager.Instance.isServer)
+        if (networkEntity.isServer)
         {
-            NetworkManager.Instance.GetNetworkServer().Broadcast(netPing.Serialize());
+            networkEntity.GetNetworkServer().Broadcast(netPing.Serialize());
         }
         else
         {
-            NetworkManager.Instance.GetNetworkClient().SendToServer(netPing.Serialize());
+            networkEntity.GetNetworkClient().SendToServer(netPing.Serialize());
         }
 
         currentDateTime = DateTime.UtcNow;

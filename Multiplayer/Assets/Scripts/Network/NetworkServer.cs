@@ -45,8 +45,10 @@ public class NetworkServer : NetworkEntity
     {
         this.port = port;
         connection = new UdpConnection(port, this);
-        checkActivity = new PingPong();
+        checkActivity = new PingPong(this);
 
+        onInitPingPong?.Invoke();
+        
         this.appStartTime = appStartTime;
     }
 
@@ -65,7 +67,7 @@ public class NetworkServer : NetworkEntity
             ipToId[ip] = newClientID;
             clients.Add(newClientID, new Client(ip, newClientID, (float)(DateTime.UtcNow - appStartTime).TotalSeconds, clientName));
             checkActivity.AddClientForList(newClientID);
-            gm.OnNewPlayer?.Invoke(newClientID);
+            OnNewPlayer?.Invoke(newClientID);
 
             List<(int, string)> playersInServer = new();
 
@@ -89,7 +91,7 @@ public class NetworkServer : NetworkEntity
     /// <param name="idToRemove">The ID of the client to remove.</param>
     public override void RemoveClient(int idToRemove)
     {
-        gm.OnRemovePlayer?.Invoke(idToRemove);
+        OnRemovePlayer?.Invoke(idToRemove);
 
         if (clients.ContainsKey(idToRemove))
         {
@@ -151,7 +153,7 @@ public class NetworkServer : NetworkEntity
             case MessageType.BulletInstatiate:
 
                 NetVector3 netBullet = new(data);
-                gm.OnInstantiateBullet?.Invoke(netBullet.GetData().id, netBullet.GetData().position);
+                OnInstantiateBullet?.Invoke(netBullet.GetData().id, netBullet.GetData().position);
 
                 BroadcastPlayerPosition(netBullet.GetData().id, data);
 

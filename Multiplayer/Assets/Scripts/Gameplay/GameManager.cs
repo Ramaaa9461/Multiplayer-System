@@ -8,15 +8,13 @@ public class GameManager : MonoBehaviourSingleton<GameManager>
 {
     public Action<int> OnBulletHit;
 
-    public Action<int> OnNewPlayer;
-    public Action<int> OnRemovePlayer;
+
 
     public Action<bool> OnInitLobbyTimer;
     public Action OnInitGameplayTimer;
 
     public Action<int> OnChangeLobbyPlayers;
 
-    public Action<int, Vector3> OnInstantiateBullet;
 
     public TextMeshProUGUI timer;
 
@@ -34,12 +32,17 @@ public class GameManager : MonoBehaviourSingleton<GameManager>
     {
         nm = NetworkManager.Instance;
 
-        OnNewPlayer += SpawnPlayerPefab;
-        OnRemovePlayer += RemovePlayer;
-        OnInstantiateBullet += InstantiatePlayerBullets;
+        nm.onInitEntity += InitNetworkEntityActions;
         OnBulletHit += OnHitRecieved;
 
         OnInitGameplayTimer += ActivePlayerControllers;
+    }
+
+    void InitNetworkEntityActions()
+    {
+        nm.networkEntity.OnNewPlayer += SpawnPlayerPefab;
+        nm.networkEntity.OnRemovePlayer += RemovePlayer;
+        nm.networkEntity.OnInstantiateBullet += InstantiatePlayerBullets;
     }
 
     void SpawnPlayerPefab(int index)
@@ -96,7 +99,7 @@ public class GameManager : MonoBehaviourSingleton<GameManager>
         playerList.Clear();
     }
 
-    void InstantiatePlayerBullets(int id, Vector3 bulletDir)
+    void InstantiatePlayerBullets(int id, Vec3 bulletDir)
     {
         playerList[id].GetComponent<PlayerController>().ServerShoot(bulletDir);
         playerList[id].GetComponent<AudioSource>().Play();

@@ -3,13 +3,42 @@ using System.Net;
 
 public abstract class NetworkEntity : IReceiveData
 {
-    /// <summary>
-    /// The port of the network manager.
-    /// </summary>
+
+    public bool isServer
+    {
+        get { return this is NetworkServer; }
+        private set { }
+    }
+    public NetworkClient GetNetworkClient()
+    {
+        if (isServer)
+        {
+            return null;
+        }
+
+        return (NetworkClient)this;
+    }
+    public NetworkServer GetNetworkServer()
+    {
+        if (!isServer)
+        {
+            return null;
+        }
+
+        return (NetworkServer)this;
+    }
+
     public int port
     {
         get; protected set;
     }
+
+    public Action onInitPingPong;
+    public Action<int, Vec3> OnInstantiateBullet;
+    public Action<int> OnNewPlayer;
+    public Action<int> OnRemovePlayer;
+
+
 
     protected UdpConnection connection;
     public Action<byte[], IPEndPoint> OnReceivedMessage;
@@ -26,8 +55,8 @@ public abstract class NetworkEntity : IReceiveData
     public NetworkEntity()
     {
         gm = GameManager.Instance;
-        sortableMessages = new();
-        nonDisposablesMessages = new();
+        sortableMessages = new(this);
+        nonDisposablesMessages = new(this);
     }
 
     public abstract void AddClient(IPEndPoint ip, int newClientID, string clientName);

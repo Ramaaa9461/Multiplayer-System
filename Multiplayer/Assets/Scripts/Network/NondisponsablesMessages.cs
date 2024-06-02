@@ -5,8 +5,7 @@ using UnityEngine;
 
 public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix en vez de diccionarios anidados
 {
-    GameManager gm;
-    NetworkManager nm;
+    NetworkEntity networkEntity;
 
     Dictionary<MessageType, Queue<byte[]>> LastMessageSendToServer;
     Dictionary<int, Dictionary<MessageType, Queue<byte[]>>> LastMessageBroadcastToClients;
@@ -19,17 +18,16 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
     Dictionary<int, Dictionary<MessageType, float>> resendPackageCounterToClients;
     Dictionary<MessageType, float> resendPackageCounterToServer;
 
-    public NondisponsablesMessages()
+    public NondisponsablesMessages(NetworkEntity networkEntity)
     {
-        nm = NetworkManager.Instance;
-        gm = GameManager.Instance;
+        this.networkEntity = networkEntity;
 
-        nm.onInitPingPong += () => pingPong = nm.networkEntity.checkActivity;
+        networkEntity.onInitPingPong += () => pingPong = networkEntity.checkActivity;
 
-        nm.onInitEntity += () => nm.networkEntity.OnReceivedMessage += OnRecievedData;
+        networkEntity.OnReceivedMessage += OnRecievedData;
 
-        gm.OnNewPlayer += AddNewClient;
-        gm.OnRemovePlayer += RemoveClient;
+        networkEntity.OnNewPlayer += AddNewClient;
+        networkEntity.OnRemovePlayer += RemoveClient;
 
         LastMessageSendToServer = new Dictionary<MessageType, Queue<byte[]>>();
         LastMessageBroadcastToClients = new Dictionary<int, Dictionary<MessageType, Queue<byte[]>>>();
@@ -48,13 +46,13 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
         {
             NetConfirmMessage netConfirmMessage = new NetConfirmMessage(MessagePriority.Default, messageType);
 
-            if (nm.isServer)
+            if (networkEntity.isServer)
             {
-                nm.GetNetworkServer().Broadcast(netConfirmMessage.Serialize(), ip);
+                networkEntity.GetNetworkServer().Broadcast(netConfirmMessage.Serialize(), ip);
             }
             else
             {
-                nm.GetNetworkClient().SendToServer(netConfirmMessage.Serialize());
+                networkEntity.GetNetworkClient().SendToServer(netConfirmMessage.Serialize());
             }
         }
 
@@ -62,9 +60,9 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
         {
             NetConfirmMessage netConfirm = new(data);
 
-            if (nm.isServer)
+            if (networkEntity.isServer)
             {
-                NetworkServer server = nm.GetNetworkServer();
+                NetworkServer server = networkEntity.GetNetworkServer();
 
                 if (server.ipToId.ContainsKey(ip))
                 {
@@ -113,13 +111,13 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
 
     public void AddSentMessagesFromServer(byte[] data, int clientId) //Cada vez que haces un broadcast
     {
-        if (nm.isServer)
+        if (networkEntity.isServer)
         {
             MessagePriority messagePriority = MessageChecker.CheckMessagePriority(data);
 
             if ((messagePriority & MessagePriority.NonDisposable) != 0)
             {
-                Debug.Log("Add Sent Message SERVER to " + clientId + " - " + MessageChecker.CheckMessageType(data));
+               // Debug.Log("Add Sent Message SERVER to " + clientId + " - " + MessageChecker.CheckMessageType(data));
 
                 if (!LastMessageBroadcastToClients.ContainsKey(clientId))
                 {
@@ -140,13 +138,13 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
 
     public void AddSentMessagesFromClients(byte[] data)
     {
-        if (!nm.isServer)
+        if (!networkEntity.isServer)
         {
             MessagePriority messagePriority = MessageChecker.CheckMessagePriority(data);
 
             if ((messagePriority & MessagePriority.NonDisposable) != 0)
             {
-                Debug.Log("Add Sent Message CLIENT to SERVER" + " - " + MessageChecker.CheckMessageType(data));
+               // Debug.Log("Add Sent Message CLIENT to SERVER" + " - " + MessageChecker.CheckMessageType(data));
 
                 MessageType messageType = MessageChecker.CheckMessageType(data);
 
@@ -162,7 +160,7 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
 
     void AddNewClient(int clientID)
     {
-        if (nm.isServer)
+        if (networkEntity.isServer)
         {
             LastMessageBroadcastToClients.Add(clientID, new Dictionary<MessageType, Queue<byte[]>>());
             resendPackageCounterToClients.Add(clientID, new Dictionary<MessageType, float>());
@@ -171,7 +169,7 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
 
     void RemoveClient(int clientID)
     {
-        if (nm.isServer)
+        if (networkEntity.isServer)
         {
             LastMessageBroadcastToClients.Remove(clientID);
             resendPackageCounterToClients.Remove(clientID);
@@ -180,9 +178,9 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
 
     public void ResendPackages()
     {
-        if (nm.isServer)
+        if (networkEntity.isServer)
         {
-            NetworkServer server = nm.GetNetworkServer();
+            NetworkServer server = networkEntity.GetNetworkServer();
 
             if (resendPackageCounterToClients.Count > 0)
             {
@@ -218,7 +216,7 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
                         if (LastMessageSendToServer[messageType].Count > 0)
                         {
                             Debug.Log("Se envio el packete de nuevo hacia el server");
-                            nm.GetNetworkClient().SendToServer(LastMessageSendToServer[messageType].Peek());
+                            networkEntity.GetNetworkClient().SendToServer(LastMessageSendToServer[messageType].Peek());
                             resendPackageCounterToServer[messageType] = 0;
                         }
                     }
