@@ -271,4 +271,15 @@ public class NetworkClient : NetworkEntity
 
         gm.UpdatePlayerPosition(netPosition.GetData());
     }
+
+    public override void SendMessage(params object[] args)
+    {
+        if (args[0] is byte[] && args.Length < 1 || args[1] is IPEndPoint)
+        {
+        }
+        else if (args[0] is byte[])
+        {
+
+        }
+    }
 }

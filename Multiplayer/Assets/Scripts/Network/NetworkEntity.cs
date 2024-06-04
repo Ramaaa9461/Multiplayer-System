@@ -56,6 +56,8 @@ public abstract class NetworkEntity : IReceiveData
         onInitPingPong += () => nonDisposablesMessages = new(this);
     }
 
+    public abstract void SendMessage(params object[] args);
+
     public abstract void AddClient(IPEndPoint ip, int newClientID, string clientName);
    
     public abstract void RemoveClient(int idToRemove);
