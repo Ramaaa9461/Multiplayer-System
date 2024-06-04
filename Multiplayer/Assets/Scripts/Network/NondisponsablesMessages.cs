@@ -190,7 +190,7 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
                     {
                         resendPackageCounterToClients[id][messageType] += pingPong.deltaTime;
 
-                        if (resendPackageCounterToClients[id][messageType] >= pingPong.GetLatencyFormServer() * 5)
+                        if (resendPackageCounterToClients[id][messageType] >= ((ServerPingPong)pingPong).GetLatencyFormClient(id) * 5)
                         {
                             if (LastMessageBroadcastToClients[id][messageType].Count > 0)
                             {
@@ -211,7 +211,7 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
                 {
                     resendPackageCounterToServer[messageType] += pingPong.deltaTime;
 
-                    if (resendPackageCounterToServer[messageType] >= pingPong.GetLatencyFormServer() * 5)
+                    if (resendPackageCounterToServer[messageType] >= ((ClientPingPong)pingPong).GetLatencyFormServer() * 5)
                     {
                         if (LastMessageSendToServer[messageType].Count > 0)
                         {

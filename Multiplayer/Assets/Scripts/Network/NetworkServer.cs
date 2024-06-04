@@ -36,6 +36,8 @@ public class NetworkServer : NetworkEntity
     private int maxPlayersPerServer = 4;
     public bool matchOnGoing = false;
 
+    ServerPingPong pingPong;
+    ServerSortableMessage sortableMessage;
     IGameActions gameActions;
 
     /// <summary>
@@ -48,7 +50,11 @@ public class NetworkServer : NetworkEntity
         this.port = port;
 
         connection = new UdpConnection(port, this);
-        checkActivity = new PingPong(this);
+
+        pingPong = new ServerPingPong(this);
+        checkActivity = pingPong;
+
+        sortableMessage = new ServerSortableMessage(this);
 
         onInitPingPong?.Invoke();
 
@@ -69,7 +75,7 @@ public class NetworkServer : NetworkEntity
 
             ipToId[ip] = newClientID;
             clients.Add(newClientID, new Client(ip, newClientID, (float)(DateTime.UtcNow - appStartTime).TotalSeconds, clientName));
-            checkActivity.AddClientForList(newClientID);
+            pingPong.AddClientForList(newClientID);
             OnNewPlayer?.Invoke(newClientID);
 
             List<(int, string)> playersInServer = new();
@@ -99,7 +105,7 @@ public class NetworkServer : NetworkEntity
         if (clients.ContainsKey(idToRemove))
         {
             Console.WriteLine("Removing client: " + idToRemove);
-            checkActivity.RemoveClientForList(idToRemove);
+            pingPong.RemoveClientForList(idToRemove);
             ipToId.Remove(clients[idToRemove].ipEndPoint);
             clients.Remove(idToRemove);
         }
@@ -121,8 +127,8 @@ public class NetworkServer : NetworkEntity
 
                 if (ipToId.ContainsKey(ip))
                 {
-                    checkActivity.ReciveClientToServerPingMessage(ipToId[ip]);
-                    checkActivity.CalculateLatencyFromClients(ipToId[ip]);
+                    pingPong.ReciveClientToServerPingMessage(ipToId[ip]);
+                    pingPong.CalculateLatencyFromClients(ipToId[ip]);
                 }
 
                 break;
@@ -145,7 +151,7 @@ public class NetworkServer : NetworkEntity
 
                 if (ipToId.ContainsKey(ip))
                 {
-                    if (sortableMessages.CheckMessageOrderRecievedFromClients(ipToId[ip], MessageChecker.CheckMessageType(data), netVector3.MessageOrder))
+                    if (sortableMessage.CheckMessageOrderRecievedFromClients(ipToId[ip], MessageChecker.CheckMessageType(data), netVector3.MessageOrder))
                     {
                         UpdatePlayerPosition(data);
                     }

@@ -47,14 +47,12 @@ public abstract class NetworkEntity : IReceiveData
     public PingPong checkActivity;
 
     protected GameManager gm;
-    protected SortableMessages sortableMessages;
     protected NondisponsablesMessages nonDisposablesMessages;
 
     public NetworkEntity()
     {
         gm = GameManager.Instance;
 
-        onInitPingPong += ()=> sortableMessages = new(this);
         onInitPingPong += () => nonDisposablesMessages = new(this);
     }
 

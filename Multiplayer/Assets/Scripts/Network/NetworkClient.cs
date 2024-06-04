@@ -34,6 +34,9 @@ public class NetworkClient : NetworkEntity
 
     private readonly Dictionary<int, Player> players = new();
 
+    ClientPingPong pingPong;
+    ClientSortableMessage sortableMessage;
+
     /// <summary>
     /// Starts the client with the specified IP address, port, and name.
     /// </summary>
@@ -47,6 +50,8 @@ public class NetworkClient : NetworkEntity
         this.userName = name;
 
         connection = new UdpConnection(ip, port, this);
+
+        onInitPingPong += () => sortableMessage = new(this);
 
         ClientToServerNetHandShake handShakeMesage = new(MessagePriority.NonDisposable, (UdpConnection.IPToLong(ip), port, name));
         SendToServer(handShakeMesage.Serialize());
@@ -62,7 +67,6 @@ public class NetworkClient : NetworkEntity
     {
         Console.WriteLine("Adding Client: " + ip.Address);
 
-        checkActivity.AddClientForList(newClientID);
         OnNewPlayer?.Invoke(newClientID);
     }
 
@@ -75,7 +79,6 @@ public class NetworkClient : NetworkEntity
         OnRemovePlayer?.Invoke(idToRemove);
 
         Console.WriteLine("Removing client: " + idToRemove);
-        checkActivity.RemoveClientForList(idToRemove);
         players.Remove(idToRemove);
 
         if (clientID == idToRemove)
@@ -100,8 +103,8 @@ public class NetworkClient : NetworkEntity
         {
             case MessageType.Ping:
 
-                checkActivity.ReciveServerToClientPingMessage();
-                checkActivity.CalculateLatencyFromServer();
+                pingPong.ReciveServerToClientPingMessage();
+                pingPong.CalculateLatencyFromServer();
 
                 break;
 
@@ -112,7 +115,8 @@ public class NetworkClient : NetworkEntity
 
                 if (checkActivity == null)
                 {
-                    checkActivity = new(this);
+                    pingPong = new ClientPingPong(this);
+                    checkActivity = pingPong;
                     onInitPingPong?.Invoke();
                 }
 
@@ -151,7 +155,7 @@ public class NetworkClient : NetworkEntity
 
                 NetVector3 netVector3 = new(data);
 
-                if (sortableMessages.CheckMessageOrderRecievedFromServer(netVector3.GetData().id, MessageType.Position, netVector3.MessageOrder))
+                if (sortableMessage.CheckMessageOrderRecievedFromServer(netVector3.GetData().id, MessageType.Position, netVector3.MessageOrder))
                 {
                     UpdatePlayerPosition(data);
                 }
