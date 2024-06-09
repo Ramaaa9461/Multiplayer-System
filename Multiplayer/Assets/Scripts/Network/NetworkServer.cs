@@ -186,9 +186,9 @@ public class NetworkServer : NetworkEntity
             case MessageType.Error:
 
                 NetErrorMessage netErrorMessage = new(data);
-                gameActions.SwitchToMenuScreen();
-                gameActions.ShowErrorPanel(netErrorMessage.GetData());
-                connection.Close();
+                gameActions.SwitchToMenuScreen();                     // SON COSAS VISUALES, se pueden matar
+                gameActions.ShowErrorPanel(netErrorMessage.GetData());// SON COSAS VISUALES, se pueden matar
+                CloseConnection();
 
                 break;
 
@@ -321,7 +321,7 @@ public class NetworkServer : NetworkEntity
     /// </summary>
     /// <param name="data">The message data received.</param>
     /// <param name="ip">The IP endpoint of the client.</param>
-    protected override void UpdateChatText(byte[] data, IPEndPoint ip)
+    protected override void UpdateChatText(byte[] data, IPEndPoint ip) //TODO: PORQUE PINGO PIDE EL IP?
     {
         string messageText = "";
 
@@ -358,6 +358,8 @@ public class NetworkServer : NetworkEntity
             Broadcast(netDisconnection.Serialize());
             RemoveClient(clientId);
         }
+
+        connection.Close();
 
         gameActions.SwitchToMenuScreen();
     }
