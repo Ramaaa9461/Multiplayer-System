@@ -166,7 +166,7 @@ public class ServerGameplay : MonoBehaviour
 
                     if (timeUntilCloseServer <= 0)
                     {
-                        server.CloseServer();
+                        server.CloseConnection();
                     }
 
                     break;

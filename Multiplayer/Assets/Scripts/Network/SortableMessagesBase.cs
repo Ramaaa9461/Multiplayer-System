@@ -25,7 +25,7 @@ public abstract class SortableMessagesBase
         clientToRowMapping = new Dictionary<int, int>();
     }
 
-    protected abstract void OnRecievedData(byte[] data, IPEndPoint ip);
+    public abstract void OnRecievedData(byte[] data, int id);
 
     public bool CheckMessageOrderRecievedFromClients(int clientID, MessageType messageType, int messageOrder)
     {

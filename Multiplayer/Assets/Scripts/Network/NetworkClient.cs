@@ -36,6 +36,7 @@ public class NetworkClient : NetworkEntity
 
     ClientPingPong pingPong;
     ClientSortableMessage sortableMessage;
+    ClientNondisponsableMessage nondisposablesMessages;
 
     /// <summary>
     /// Starts the client with the specified IP address, port, and name.
@@ -51,6 +52,7 @@ public class NetworkClient : NetworkEntity
 
         connection = new UdpConnection(ip, port, this);
 
+        onInitPingPong += () => nondisposablesMessages = new(this);
         onInitPingPong += () => sortableMessage = new(this);
 
         ClientToServerNetHandShake handShakeMesage = new(MessagePriority.NonDisposable, (UdpConnection.IPToLong(ip), port, name));
@@ -98,6 +100,8 @@ public class NetworkClient : NetworkEntity
     {
         // Invoke the event to notify listeners about the received message
         OnReceivedMessage?.Invoke(data, ip);
+
+        OnReceivedMessagePriority(data);
 
         switch (MessageChecker.CheckMessageType(data))
         {
@@ -214,6 +218,20 @@ public class NetworkClient : NetworkEntity
             default:
                 break;
         }
+
+    }
+
+    void OnReceivedMessagePriority(byte[] data)
+    {
+
+        if (MessageChecker.IsSorteableMessage(data))
+        {
+            sortableMessage?.OnRecievedData(data, -1);
+        }
+        if (MessageChecker.IsNondisponsableMessage(data))
+        {
+            nondisposablesMessages?.OnReceivedData(data, -1);
+        }
     }
 
     /// <summary>
@@ -222,7 +240,7 @@ public class NetworkClient : NetworkEntity
     /// <param name="data">The data to send.</param>
     public void SendToServer(byte[] data)
     {
-        nonDisposablesMessages?.AddSentMessagesFromClients(data);
+        nondisposablesMessages?.AddSentMessages(data);
         connection.Send(data);
     }
 
@@ -254,7 +272,7 @@ public class NetworkClient : NetworkEntity
     /// <summary>
     /// Disconnects the player from the network.
     /// </summary>
-    public void DisconectPlayer()
+    public override void CloseConnection()
     {
         connection.Close();
         NetworkScreen.Instance.SwitchToMenuScreen();
@@ -272,14 +290,23 @@ public class NetworkClient : NetworkEntity
         gm.UpdatePlayerPosition(netPosition.GetData());
     }
 
-    public override void SendMessage(params object[] args)
+    public override void Update()
     {
-        if (args[0] is byte[] && args.Length < 1 || args[1] is IPEndPoint)
-        {
-        }
-        else if (args[0] is byte[])
-        {
+        base.Update();
 
+        if (connection != null)
+        {
+            nondisposablesMessages?.ResendPackages();
         }
+    }
+
+    public override void SendMessage(byte[] data)
+    {
+        SendToServer(data);
+    }
+
+    public override void SendMessage(byte[] data, int id = -1) //Es una sobrecarga que solo usa el SERVER
+    {
+        SendToServer(data);
     }
 }

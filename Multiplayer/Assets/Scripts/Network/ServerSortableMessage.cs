@@ -4,12 +4,11 @@ public class ServerSortableMessage : SortableMessagesBase
 {
     public ServerSortableMessage(NetworkEntity networkEntity) : base(networkEntity)
     {
-        networkEntity.OnReceivedMessage += OnRecievedData;
         networkEntity.OnNewPlayer += AddNewClient;
         networkEntity.OnRemovePlayer += RemoveClient;
     }
 
-    protected override void OnRecievedData(byte[] data, IPEndPoint ip)
+    public override void OnRecievedData(byte[] data, int id)
     {
         MessagePriority messagePriority = MessageChecker.CheckMessagePriority(data);
 
@@ -18,17 +17,12 @@ public class ServerSortableMessage : SortableMessagesBase
             MessageType messageType = MessageChecker.CheckMessageType(data);
             int messageTypeIndex = (int)messageType;
 
-            NetworkServer server = networkEntity.GetNetworkServer();
-
-            if (server.ipToId.ContainsKey(ip))
-            {
-                int clientId = server.ipToId[ip];
+                int clientId = id;
                 if (clientToRowMapping.ContainsKey(clientId))
                 {
                     int row = clientToRowMapping[clientId];
                     OrderLastMessageReciveFromClients.Set(row, messageTypeIndex, !OrderLastMessageReciveFromClients.Get(row, messageTypeIndex));
                 }
-            }
         }
     }
 }

@@ -93,5 +93,15 @@ public static class MessageChecker
         sum <<= 3;
         sum >>= 2;
     }
+
+    public static bool IsSorteableMessage(byte[] data)
+    {
+        return (CheckMessagePriority(data) & MessagePriority.Sorteable) != 0;
+    }
+
+    public static bool IsNondisponsableMessage(byte[] data)
+    {
+        return (CheckMessagePriority(data) & MessagePriority.NonDisposable) != 0;
+    }
 }
 

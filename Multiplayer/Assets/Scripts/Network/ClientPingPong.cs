@@ -22,15 +22,15 @@ public class ClientPingPong : PingPong
         if (lastMessageReceivedFromServer > timeUntilDisconnection)
         {
             NetIDMessage netDisconnection = new NetIDMessage(MessagePriority.Default, NetworkManager.Instance.ClientID);
-            networkEntity.GetNetworkClient().SendToServer(netDisconnection.Serialize());
-            networkEntity.GetNetworkClient().DisconectPlayer();
+            networkEntity.SendMessage(netDisconnection.Serialize());
+            networkEntity.CloseConnection();
         }
     }
 
     protected override void SendPingMessage()
     {
         NetPing netPing = new NetPing();
-        networkEntity.GetNetworkClient().SendToServer(netPing.Serialize());
+        networkEntity.SendMessage(netPing.Serialize());
         currentDateTime = DateTime.UtcNow;
     }
 

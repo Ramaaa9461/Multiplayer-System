@@ -42,7 +42,7 @@ public class ServerPingPong : PingPong
                 networkEntity.RemoveClient(clientID);
 
                 NetIDMessage netDisconnection = new NetIDMessage(MessagePriority.Default, clientID);
-                networkEntity.GetNetworkServer().Broadcast(netDisconnection.Serialize());
+                networkEntity.SendMessage(netDisconnection.Serialize());
             }
         }
     }
@@ -50,7 +50,7 @@ public class ServerPingPong : PingPong
     protected override void SendPingMessage()
     {
         NetPing netPing = new NetPing();
-        networkEntity.GetNetworkServer().Broadcast(netPing.Serialize());
+        networkEntity.SendMessage(netPing.Serialize());
         currentDateTime = DateTime.UtcNow;
     }
 

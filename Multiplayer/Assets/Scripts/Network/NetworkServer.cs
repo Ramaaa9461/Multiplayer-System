@@ -38,6 +38,8 @@ public class NetworkServer : NetworkEntity
 
     ServerPingPong pingPong;
     ServerSortableMessage sortableMessage;
+    ServerNondisponsableMessage nondisponsableMessage;
+
     IGameActions gameActions;
 
     /// <summary>
@@ -54,9 +56,10 @@ public class NetworkServer : NetworkEntity
         pingPong = new ServerPingPong(this);
         checkActivity = pingPong;
 
-        sortableMessage = new ServerSortableMessage(this);
-
         onInitPingPong?.Invoke();
+
+        sortableMessage = new ServerSortableMessage(this);
+        nondisponsableMessage = new ServerNondisponsableMessage(this);
 
         this.appStartTime = appStartTime;
     }
@@ -120,6 +123,8 @@ public class NetworkServer : NetworkEntity
     {
         // Invoke the event to notify listeners about the received message
         OnReceivedMessage?.Invoke(data, ip);
+
+        OnReceivedMessagePriority(data, ip);
 
         switch (MessageChecker.CheckMessageType(data))
         {
@@ -190,6 +195,22 @@ public class NetworkServer : NetworkEntity
             default:
                 break;
         }
+
+    }
+
+    void OnReceivedMessagePriority(byte[] data, IPEndPoint ip)
+    {
+        if (ipToId.ContainsKey(ip))
+        {
+            if (MessageChecker.IsSorteableMessage(data))
+            {
+                sortableMessage?.OnRecievedData(data, ipToId[ip]);
+            }
+            if (MessageChecker.IsNondisponsableMessage(data))
+            {
+                nondisponsableMessage?.OnReceivedData(data, ipToId[ip]);
+            }
+        }
     }
 
     /// <summary>
@@ -201,7 +222,7 @@ public class NetworkServer : NetworkEntity
     {
         if (ipToId.ContainsKey(ip))
         {
-            nonDisposablesMessages?.AddSentMessagesFromServer(data, ipToId[ip]);
+            nondisponsableMessage?.AddSentMessages(data, ipToId[ip]);
         }
         connection.Send(data, ip);
     }
@@ -216,7 +237,7 @@ public class NetworkServer : NetworkEntity
         {
             while (iterator.MoveNext())
             {
-                nonDisposablesMessages?.AddSentMessagesFromServer(data, iterator.Current.Value.id);
+                nondisponsableMessage?.AddSentMessages(data, iterator.Current.Value.id);
                 connection.Send(data, iterator.Current.Value.ipEndPoint);
             }
         }
@@ -320,13 +341,13 @@ public class NetworkServer : NetworkEntity
         // Notify all clients about the server's disconnection and close the server
         NetErrorMessage netErrorMessage = new("Lost Connection To Server");
         Broadcast(netErrorMessage.Serialize());
-        CloseServer();
+        CloseConnection();
     }
 
     /// <summary>
     /// Closes the server and removes all connected clients.
     /// </summary>
-    public void CloseServer()
+    public override void CloseConnection()
     {
         // Notify all clients about their disconnection and remove them
         List<int> clientIdsToRemove = new(clients.Keys);
@@ -380,14 +401,27 @@ public class NetworkServer : NetworkEntity
         }
     }
 
-    public override void SendMessage(params object[] args)
-    {
-        if (args[0] is byte[] && args.Length < 1 || args[1] is IPEndPoint)
-        {
-        }
-        else if (args[0] is byte[])
-        {
 
+    public override void Update()
+    {
+        base.Update();
+
+        if (connection != null)
+        {
+            nondisponsableMessage?.ResendPackages();
+        }
+    }
+
+    public override void SendMessage(byte[] data)
+    {
+        Broadcast(data);
+    }
+
+    public override void SendMessage(byte[] data, int id)
+    {
+        if (clients.ContainsKey(id))
+        {
+            Broadcast(data, clients[id].ipEndPoint);
         }
     }
 }

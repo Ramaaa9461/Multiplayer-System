@@ -4,12 +4,11 @@ public class ClientSortableMessage : SortableMessagesBase
 {
     public ClientSortableMessage(NetworkEntity networkEntity) : base(networkEntity)
     {
-        networkEntity.OnReceivedMessage += OnRecievedData;
         networkEntity.OnNewPlayer += AddNewClient;
         networkEntity.OnRemovePlayer += RemoveClient;
     }
 
-    protected override void OnRecievedData(byte[] data, IPEndPoint ip)
+    public override void OnRecievedData(byte[] data, int id)
     {
         MessagePriority messagePriority = MessageChecker.CheckMessagePriority(data);
 

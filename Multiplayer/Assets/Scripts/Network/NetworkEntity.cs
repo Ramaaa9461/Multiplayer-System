@@ -3,31 +3,6 @@ using System.Net;
 
 public abstract class NetworkEntity : IReceiveData
 {
-
-    public bool isServer
-    {
-        get { return this is NetworkServer; }
-        private set { }
-    }
-    public NetworkClient GetNetworkClient()
-    {
-        if (isServer)
-        {
-            return null;
-        }
-
-        return (NetworkClient)this;
-    }
-    public NetworkServer GetNetworkServer()
-    {
-        if (!isServer)
-        {
-            return null;
-        }
-
-        return (NetworkServer)this;
-    }
-
     public int port
     {
         get; protected set;
@@ -47,34 +22,30 @@ public abstract class NetworkEntity : IReceiveData
     public PingPong checkActivity;
 
     protected GameManager gm;
-    protected NondisponsablesMessages nonDisposablesMessages;
 
     public NetworkEntity()
     {
         gm = GameManager.Instance;
-
-        onInitPingPong += () => nonDisposablesMessages = new(this);
     }
-
-    public abstract void SendMessage(params object[] args);
 
     public abstract void AddClient(IPEndPoint ip, int newClientID, string clientName);
    
     public abstract void RemoveClient(int idToRemove);
 
+    public abstract void CloseConnection();
+
     public abstract void OnReceiveData(byte[] data, IPEndPoint ipEndpoint);
 
-    /// <summary>
-    /// Updates the network manager.
-    /// </summary>
+    public abstract void SendMessage(byte[] data, int id);
+
+    public abstract void SendMessage(byte[] data);
+
     public virtual void Update()
     {
-        // Flush the data in the main thread
         if (connection != null)
         {
             connection.FlushReceiveData();
             checkActivity?.UpdateCheckActivity();
-            nonDisposablesMessages?.ResendPackages();
         }
     }
 
@@ -83,6 +54,5 @@ public abstract class NetworkEntity : IReceiveData
     protected abstract void UpdatePlayerPosition(byte[] data);
     
     public abstract void OnApplicationQuit();
-
 
 }
