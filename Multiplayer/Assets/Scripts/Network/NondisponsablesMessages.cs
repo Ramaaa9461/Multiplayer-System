@@ -3,26 +3,27 @@ using System.Collections.Generic;
 using System.Net;
 using UnityEngine;
 
-public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix en vez de diccionarios anidados
+public class NondisponsablesMessages // Reworked to use DynamicByteQueueMatrix
 {
-    NetworkEntity networkEntity;
+    private NetworkEntity networkEntity;
 
-    Dictionary<MessageType, Queue<byte[]>> LastMessageSendToServer;
-    Dictionary<int, Dictionary<MessageType, Queue<byte[]>>> LastMessageBroadcastToClients;
+    private Dictionary<MessageType, Queue<byte[]>> LastMessageSendToServer;
+    private DynamicByteQueueMatrix LastMessageBroadcastToClients;
 
-    Dictionary<byte[], float> MessagesHistory = new();
-    int secondsToDeleteMessageHistory = 15;
+    private Dictionary<byte[], float> MessagesHistory = new();
+    private int secondsToDeleteMessageHistory = 15;
 
-    PingPong pingPong;
+    private PingPong pingPong;
 
-    Dictionary<int, Dictionary<MessageType, float>> resendPackageCounterToClients;
-    Dictionary<MessageType, float> resendPackageCounterToServer;
+    private DynamicFloatQueueMatrix resendPackageCounterToClients;
+    private Dictionary<MessageType, float> resendPackageCounterToServer;
 
     public NondisponsablesMessages(NetworkEntity networkEntity)
     {
         this.networkEntity = networkEntity;
 
-        networkEntity.onInitPingPong += () => pingPong = networkEntity.checkActivity;
+        pingPong = networkEntity.checkActivity;
+        Debug.Log(pingPong + " - " + networkEntity.checkActivity);
 
         networkEntity.OnReceivedMessage += OnRecievedData;
 
@@ -30,12 +31,11 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
         networkEntity.OnRemovePlayer += RemoveClient;
 
         LastMessageSendToServer = new Dictionary<MessageType, Queue<byte[]>>();
-        LastMessageBroadcastToClients = new Dictionary<int, Dictionary<MessageType, Queue<byte[]>>>();
+        LastMessageBroadcastToClients = new DynamicByteQueueMatrix();
 
-        resendPackageCounterToClients = new Dictionary<int, Dictionary<MessageType, float>>();
+        resendPackageCounterToClients = new DynamicFloatQueueMatrix();
         resendPackageCounterToServer = new Dictionary<MessageType, float>();
     }
-
 
     void OnRecievedData(byte[] data, IPEndPoint ip)
     {
@@ -48,11 +48,11 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
 
             if (networkEntity.isServer)
             {
-                networkEntity.GetNetworkServer().Broadcast(netConfirmMessage.Serialize(), ip);
+                //networkEntity.GetNetworkServer().Broadcast(netConfirmMessage.Serialize(), ip);
             }
             else
             {
-                networkEntity.GetNetworkClient().SendToServer(netConfirmMessage.Serialize());
+               // networkEntity.GetNetworkClient().SendToServer(netConfirmMessage.Serialize());
             }
         }
 
@@ -66,24 +66,21 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
 
                 if (server.ipToId.ContainsKey(ip))
                 {
-                    if (LastMessageBroadcastToClients.ContainsKey(server.ipToId[ip]))
+                    int clientId = server.ipToId[ip];
+                    Queue<byte[]> clientMessages = LastMessageBroadcastToClients.Get(clientId, netConfirm.GetData());
+
+                    if (clientMessages.Count > 0)
                     {
-                        var clientMessages = LastMessageBroadcastToClients[server.ipToId[ip]];
+                        byte[] message = clientMessages.Peek();
+                        Debug.Log(MessageChecker.CheckMessageType(message));
 
-                        if (clientMessages.ContainsKey(netConfirm.GetData()) && clientMessages[netConfirm.GetData()].Count > 0)
+                        if (MessagesHistory.ContainsKey(message))
                         {
-                            byte[] message = clientMessages[netConfirm.GetData()].Peek();
-
-                            if (MessagesHistory.ContainsKey(message))
-                            {
-                                clientMessages[netConfirm.GetData()].Dequeue();
-                            }
-                            else
-                            {
-                                MessagesHistory.Add(clientMessages[netConfirm.GetData()].Dequeue(), secondsToDeleteMessageHistory);
-                            }
-
-                            //  Debug.Log("Confirm message with CLIENT " + server.clients[server.ipToId[ip]].id + " - " + MessageChecker.CheckMessageType(message)); ;
+                            clientMessages.Dequeue();
+                        }
+                        else
+                        {
+                            MessagesHistory.Add(clientMessages.Dequeue(), secondsToDeleteMessageHistory);
                         }
                     }
                 }
@@ -102,14 +99,12 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
                     {
                         MessagesHistory.Add(LastMessageSendToServer[netConfirm.GetData()].Dequeue(), secondsToDeleteMessageHistory);
                     }
-
-                    // Debug.Log("Confirm message with SERVER " + " - " + MessageChecker.CheckMessageType(message)); ;
                 }
             }
         }
     }
 
-    public void AddSentMessagesFromServer(byte[] data, int clientId) //Cada vez que haces un broadcast
+    public void AddSentMessagesFromServer(byte[] data, int clientId) // Cada vez que haces un broadcast
     {
         if (networkEntity.isServer)
         {
@@ -117,21 +112,12 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
 
             if ((messagePriority & MessagePriority.NonDisposable) != 0)
             {
-               // Debug.Log("Add Sent Message SERVER to " + clientId + " - " + MessageChecker.CheckMessageType(data));
-
-                if (!LastMessageBroadcastToClients.ContainsKey(clientId))
-                {
-                    LastMessageBroadcastToClients.Add(clientId, new Dictionary<MessageType, Queue<byte[]>>());
-                }
-
                 MessageType messageType = MessageChecker.CheckMessageType(data);
+                Queue<byte[]> clientMessages = LastMessageBroadcastToClients.Get(clientId, messageType);
 
-                if (!LastMessageBroadcastToClients[clientId].ContainsKey(messageType))
-                {
-                    LastMessageBroadcastToClients[clientId].Add(messageType, new Queue<byte[]>());
-                }
-
-                LastMessageBroadcastToClients[clientId][messageType].Enqueue(data);
+                clientMessages.Enqueue(data);
+                LastMessageBroadcastToClients.Set(clientId, messageType, clientMessages);
+                resendPackageCounterToClients.Set(clientId, messageType, new Queue<float>());
             }
         }
     }
@@ -144,8 +130,6 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
 
             if ((messagePriority & MessagePriority.NonDisposable) != 0)
             {
-               // Debug.Log("Add Sent Message CLIENT to SERVER" + " - " + MessageChecker.CheckMessageType(data));
-
                 MessageType messageType = MessageChecker.CheckMessageType(data);
 
                 if (!LastMessageSendToServer.ContainsKey(messageType))
@@ -154,6 +138,7 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
                 }
 
                 LastMessageSendToServer[messageType].Enqueue(data);
+                resendPackageCounterToServer[messageType] = 0;
             }
         }
     }
@@ -162,8 +147,8 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
     {
         if (networkEntity.isServer)
         {
-            LastMessageBroadcastToClients.Add(clientID, new Dictionary<MessageType, Queue<byte[]>>());
-            resendPackageCounterToClients.Add(clientID, new Dictionary<MessageType, float>());
+            LastMessageBroadcastToClients.Set(clientID, MessageType.Default, new Queue<byte[]>());
+            resendPackageCounterToClients.Set(clientID, MessageType.Default, new Queue<float>());
         }
     }
 
@@ -171,8 +156,8 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
     {
         if (networkEntity.isServer)
         {
-            LastMessageBroadcastToClients.Remove(clientID);
-            resendPackageCounterToClients.Remove(clientID);
+            LastMessageBroadcastToClients.ClearRow(clientID);
+            resendPackageCounterToClients.ClearRow(clientID);
         }
     }
 
@@ -182,38 +167,49 @@ public class NondisponsablesMessages //TODO: Reworkear para utilizar BitMatrix e
         {
             NetworkServer server = networkEntity.GetNetworkServer();
 
-            if (resendPackageCounterToClients.Count > 0)
+            for (int id = 0; id < resendPackageCounterToClients.Rows; id++)
             {
-                foreach (int id in resendPackageCounterToClients.Keys)
+                for (int messageTypeIndex = 0; messageTypeIndex < (int)MessageType.Winner; messageTypeIndex++)
                 {
-                    foreach (MessageType messageType in resendPackageCounterToClients[id].Keys)
-                    {
-                        resendPackageCounterToClients[id][messageType] += pingPong.deltaTime;
+                    MessageType messageType = (MessageType)messageTypeIndex;
+                    Queue<float> clientCounters = resendPackageCounterToClients.Get(id, messageType);
 
-                        if (resendPackageCounterToClients[id][messageType] >= ((ServerPingPong)pingPong).GetLatencyFormClient(id) * 5)
+                    if (clientCounters.Count > 0)
+                    {
+                        float counter = clientCounters.Dequeue();
+                        counter += pingPong.deltaTime;
+
+                        if (counter >= ((ServerPingPong)pingPong).GetLatencyFormClient(id) * 5)
                         {
-                            if (LastMessageBroadcastToClients[id][messageType].Count > 0)
+                            Queue<byte[]> clientMessages = LastMessageBroadcastToClients.Get(id, messageType);
+
+                            if (clientMessages.Count > 0)
                             {
                                 Debug.Log("Se envio el packete de nuevo hacia el cliente " + id);
-                                server.Broadcast(LastMessageBroadcastToClients[id][messageType].Peek(), server.clients[id].ipEndPoint);
-                                resendPackageCounterToClients[id][messageType] = 0;
+                                server.Broadcast(clientMessages.Peek(), server.clients[id].ipEndPoint);
+                                counter = 0;
                             }
                         }
+
+                        clientCounters.Enqueue(counter);
+                        resendPackageCounterToClients.Set(id, messageType, clientCounters);
                     }
                 }
             }
         }
         else
         {
-            if (resendPackageCounterToServer.Count > 0)
-            {
-                foreach (MessageType messageType in resendPackageCounterToServer.Keys)
-                {
-                    resendPackageCounterToServer[messageType] += pingPong.deltaTime;
+            List<MessageType> keys = new List<MessageType>(resendPackageCounterToServer.Keys);
 
-                    if (resendPackageCounterToServer[messageType] >= ((ClientPingPong)pingPong).GetLatencyFormServer() * 5)
+            if (keys.Count > 0)
+            {
+                foreach (MessageType messageType in keys)
+                {
+                    if (LastMessageSendToServer[messageType].Count > 0)
                     {
-                        if (LastMessageSendToServer[messageType].Count > 0)
+                        resendPackageCounterToServer[messageType] += pingPong.deltaTime;
+
+                        if (resendPackageCounterToServer[messageType] >= ((ClientPingPong)pingPong).GetLatencyFormServer() * 5)
                         {
                             Debug.Log("Se envio el packete de nuevo hacia el server");
                             networkEntity.GetNetworkClient().SendToServer(LastMessageSendToServer[messageType].Peek());

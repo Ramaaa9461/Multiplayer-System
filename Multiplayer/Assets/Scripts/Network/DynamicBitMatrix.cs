@@ -41,3 +41,4 @@ public class DynamicBitMatrix
     public int Rows => matrix.Count;
     public int Columns => columns;
 }
+
