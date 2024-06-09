@@ -57,14 +57,16 @@ public class ServerPingPong : PingPong
     public void CalculateLatencyFromClients(int clientID)
     {
         TimeSpan newDateTime = DateTime.UtcNow - currentDateTime;
-        latencyFromClients[clientID] = (float)newDateTime.TotalMilliseconds;
-        // Debug.Log("Latency from client " + clientID + " - " + latencyFromClients[clientID] / 1000);
+        latencyFromClients[clientID] = (float)(newDateTime.TotalMilliseconds / 1000);
+
+        // UnityEngine.Debug.Log("Calculate Latency from client " + clientID + " - " + latencyFromClients[clientID] / 1000);
     }
 
     public float GetLatencyFormClient(int clientId)
     {
         if (latencyFromClients.ContainsKey(clientId))
         {
+           // UnityEngine.Debug.Log("Latency from " + clientId + " = " + latencyFromClients[clientId]);
             return latencyFromClients[clientId];
         }
 

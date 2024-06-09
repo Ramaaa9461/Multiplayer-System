@@ -7,7 +7,7 @@ public abstract class PingPong
     protected int timeUntilDisconnection = 5;
     protected float sendMessageCounter = 0;
     protected float secondsPerCheck = 1.0f;
-    protected DateTime currentDateTime;
+    protected DateTime currentDateTime = DateTime.UtcNow;
     protected DateTime lastUpdateTime = DateTime.UtcNow;
 
     public PingPong(NetworkEntity networkEntity)
