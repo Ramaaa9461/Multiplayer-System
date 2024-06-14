@@ -42,7 +42,7 @@ namespace ParrelSync
                     /// If original project cannot be found, display warning message.
                     EditorGUILayout.HelpBox(
                         "This project is a clone, but the link to the original seems lost.\nYou have to manually open the original and create a new clone instead of this one.\n",
-                        MessageType.Warning);
+                         MessageType.Warning);
                 }
                 else
                 {

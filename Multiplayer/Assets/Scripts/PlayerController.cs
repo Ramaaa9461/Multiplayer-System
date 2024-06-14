@@ -1,3 +1,4 @@
+using Net;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -74,7 +75,7 @@ public class PlayerController : MonoBehaviour
                 GameObject bullet = Instantiate(bulletPrefab, transform.position + direction, Quaternion.identity);
                 bullet.GetComponent<BulletController>().SetDirection(direction, clientID);
 
-                NetVector3 netBullet = new NetVector3(MessagePriority.NonDisposable, (nm.ClientID, direction));
+                NetVector3 netBullet = new NetVector3(MessagePriority.NonDisposable, (nm.ClientID,new Vec3(direction.x, direction.y,direction.z)));
                 netBullet.CurrentMessageType = MessageType.BulletInstatiate;
                 netBullet.MessageOrder = bulletsMessageOrder;
                 nm.GetNetworkClient().SendToServer(netBullet.Serialize());
@@ -91,7 +92,7 @@ public class PlayerController : MonoBehaviour
 
     void SendPosition()
     {
-        NetVector3 netVector3 = new NetVector3(MessagePriority.Sorteable, (nm.ClientID, transform.position));
+        NetVector3 netVector3 = new NetVector3(MessagePriority.Sorteable, (nm.ClientID, new Vec3(transform.position.x, transform.position.y, transform.position.z)));
         netVector3.MessageOrder = positionMessageOrder;
         nm.GetNetworkClient().SendToServer(netVector3.Serialize());
         positionMessageOrder++;
@@ -116,8 +117,8 @@ public class PlayerController : MonoBehaviour
         {
             //TODO: El server tiene que hecharlo de la partida
             NetIDMessage netDisconnection = new NetIDMessage(MessagePriority.Default, clientID);
-            nm.GetNetworkServer().Broadcast(netDisconnection.Serialize());
-            nm.GetNetworkServer().RemoveClient(clientID);
+            nm.networkEntity.SendMessage(netDisconnection.Serialize());
+            nm.networkEntity.RemoveClient(clientID);
         }
     }
 }

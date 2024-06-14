@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using Net;
+using System.Net;
 using UnityEngine.UI;
 
 public class ChatScreen : MonoBehaviourSingleton<ChatScreen>
@@ -27,7 +28,7 @@ public class ChatScreen : MonoBehaviourSingleton<ChatScreen>
 
             if (NetworkManager.Instance.isServer)
             {
-                NetworkManager.Instance.GetNetworkServer().Broadcast(netMessage.Serialize());
+                NetworkManager.Instance.networkEntity.SendMessage(netMessage.Serialize());
                 messages.text += str + System.Environment.NewLine;
             }
             else

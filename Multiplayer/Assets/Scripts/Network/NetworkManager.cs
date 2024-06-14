@@ -1,15 +1,10 @@
-﻿using System;
+﻿using Net;
+using System;
 using System.Net;
+using UnityEngine;
 
-public interface IGameActions
-{
-    void SwitchToMenuScreen();
-    void WriteChat(string text);
-    void ShowErrorPanel(string errorText);
-    void UpdatePlayerPosition((int index, Vec3 newPosition) data);
-}
 
-public class NetworkManager : MonoBehaviourSingleton<NetworkManager> , IGameActions 
+public class NetworkManager : MonoBehaviourSingleton<NetworkManager>  
 {
 
     public NetworkEntity networkEntity;
@@ -23,7 +18,7 @@ public class NetworkManager : MonoBehaviourSingleton<NetworkManager> , IGameActi
     }
     public bool isServer
     {
-        get { return networkEntity is NetworkServer; }
+        get { return !(networkEntity is NetworkClient); }
         private set { }
     }
     
@@ -44,20 +39,10 @@ public class NetworkManager : MonoBehaviourSingleton<NetworkManager> , IGameActi
         return (NetworkClient)networkEntity;
     }
 
-    public NetworkServer GetNetworkServer()
-    {
-        if (!isServer)
-        {
-            return null;
-        }
-
-        return (NetworkServer)networkEntity;
-    }
-
     public void StartServer(int port)
     {
-        networkEntity = new NetworkServer(this, port, appStartTime);
-        onInitEntity?.Invoke();
+   //     networkEntity = new NetworkServer(this, port, appStartTime);
+   //     onInitEntity?.Invoke();
 
     }
 
@@ -71,24 +56,7 @@ public class NetworkManager : MonoBehaviourSingleton<NetworkManager> , IGameActi
     {
         if (networkEntity != null)
         {
-            if (isServer)
-            {
-                NetworkServer server = GetNetworkServer();
-
-                if (server != null)
-                {
-                    server.Update();
-                }
-            }
-            else
-            {
-                NetworkClient client = GetNetworkClient();
-
-                if (client != null)
-                {
-                    client.Update();
-                }
-            }
+            networkEntity.Update();
         }
     }
 
@@ -114,7 +82,7 @@ public class NetworkManager : MonoBehaviourSingleton<NetworkManager> , IGameActi
         NetworkScreen.Instance.ShowErrorPanel(errorText);
     }
 
-    public void UpdatePlayerPosition((int index, Vec3 newPosition) data )
+    public void UpdatePlayerPosition((int index, Vector3 newPosition) data )
     {
         GameManager.Instance.UpdatePlayerPosition(data);
     }
