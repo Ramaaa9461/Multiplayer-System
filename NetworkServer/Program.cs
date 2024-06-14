@@ -4,7 +4,6 @@ namespace NetworkServer
 {
     class Program
     {
-
         static void Main(string[] args)
         {
             int port = 51000;
