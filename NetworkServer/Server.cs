@@ -144,7 +144,7 @@ public class Server : NetworkEntity
 
             case MessageType.Console:
 
-                UpdateChatText(data, ip);
+                UpdateChatText(data);
 
                 break;
 
@@ -317,7 +317,7 @@ public class Server : NetworkEntity
     /// </summary>
     /// <param name="data">The message data received.</param>
     /// <param name="ip">The IP endpoint of the client.</param>
-    protected override void UpdateChatText(byte[] data, IPEndPoint ip) //TODO: PORQUE PINGO PIDE EL IP?
+    protected override void UpdateChatText(byte[] data)
     {
         string messageText = "";
 
@@ -354,6 +354,7 @@ public class Server : NetworkEntity
         }
 
         connection.Close();
+  //      System.Diagnostics.Process.GetCurrentProcess().Kill;
     }
 
     /// <summary>

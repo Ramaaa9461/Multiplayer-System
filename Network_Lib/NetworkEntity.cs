@@ -23,7 +23,6 @@ namespace Net
 
         public PingPong checkActivity;
 
-
         public NetworkEntity()
         {
         }
@@ -49,7 +48,7 @@ namespace Net
             }
         }
 
-        protected abstract void UpdateChatText(byte[] data, IPEndPoint ip);
+        protected abstract void UpdateChatText(byte[] data);
 
         protected abstract void UpdatePlayerPosition(byte[] data);
 

@@ -6,12 +6,12 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v5.0": {
-      "NetworkServer/1.0.0": {
+      "Match_Maker/1.0.0": {
         "dependencies": {
           "Network_Lib": "1.0.0"
         },
         "runtime": {
-          "NetworkServer.dll": {}
+          "Match_Maker.dll": {}
         }
       },
       "Network_Lib/1.0.0": {
@@ -22,7 +22,7 @@
     }
   },
   "libraries": {
-    "NetworkServer/1.0.0": {
+    "Match_Maker/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

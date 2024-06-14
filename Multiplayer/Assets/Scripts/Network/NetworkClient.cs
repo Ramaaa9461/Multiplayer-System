@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using Net;
+using UnityEngine;
 
 public class NetworkClient : NetworkEntity
 {
@@ -85,7 +86,7 @@ public class NetworkClient : NetworkEntity
     {
         OnRemovePlayer?.Invoke(idToRemove);
 
-        Console.WriteLine("Removing client: " + idToRemove);
+        Debug.Log("Removing client: " + idToRemove);
         players.Remove(idToRemove);
 
         if (clientID == idToRemove)
