@@ -24,7 +24,7 @@ namespace NetworkServer
             DateTime dateTime = DateTime.UtcNow;
             Server server = new Server(port, dateTime);
 
-            Console.WriteLine($"Server created in port {port}");
+            Console.WriteLine($"Server created in port {port} ({dateTime})");
 
                 while (true)
                 {

@@ -15,10 +15,11 @@ namespace Net
     public enum MessageType
     {
         Default = -100,
-        AssignServer = -5,
+        Ping = -7,
+        AssignServer = -6,
         Confirm = -5,
         Error = -4,
-        Ping = -3,
+        MatchMakerToClientHandShake = -3,
         ServerToClientHandShake = -2,
         ClientToServerHandShake = -1,
         Console = 0,

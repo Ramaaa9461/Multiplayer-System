@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 using Net;
 using UnityEngine;
 
@@ -54,14 +56,27 @@ public class NetworkClient : NetworkEntity
         this.ipAddress = ip;
         this.userName = name;
 
+        InitializeClient();
+    }
+
+    private async void InitializeClientWithDelay(int secondsToDelay)
+    {
+        await Task.Delay(secondsToDelay * 1000); // Esperar 2 segundos
+        InitializeClient();
+    }
+
+    void InitializeClient()
+    {
         gm = GameManager.Instance;
 
-        connection = new UdpConnection(ip, port, this);
+        Debug.Log($"Initialize Client = IP: {ipAddress} - Port: {port} - DataReceive {this}");
+
+        connection = new UdpConnection(ipAddress, port, this);
 
         onInitPingPong += () => nondisposablesMessages = new(this);
         onInitPingPong += () => sortableMessage = new(this);
 
-        ClientToServerNetHandShake handShakeMesage = new(MessagePriority.NonDisposable, (UdpConnection.IPToLong(ip), port, name));
+        ClientToServerNetHandShake handShakeMesage = new(MessagePriority.NonDisposable, (UdpConnection.IPToLong(ipAddress), port, userName));
         SendToServer(handShakeMesage.Serialize());
     }
 
@@ -91,9 +106,7 @@ public class NetworkClient : NetworkEntity
 
         if (clientID == idToRemove)
         {
-            gm.RemoveAllPlayers();
-            checkActivity = null;
-            NetworkScreen.Instance.SwitchToMenuScreen();
+            CloseConnection();
         }
     }
 
@@ -104,8 +117,13 @@ public class NetworkClient : NetworkEntity
     /// <param name="ip">The IP address of the sender.</param>
     public override void OnReceiveData(byte[] data, IPEndPoint ip)
     {
-        // Invoke the event to notify listeners about the received message
+        if (data == null || ip == null)
+        {
+            return;
+        }
+
         OnReceivedMessage?.Invoke(data, ip);
+
 
         OnReceivedMessagePriority(data);
 
@@ -115,6 +133,38 @@ public class NetworkClient : NetworkEntity
 
                 pingPong.ReciveServerToClientPingMessage();
                 pingPong.CalculateLatencyFromServer();
+
+                break;
+
+            case MessageType.AssignServer:
+
+                NetIDMessage netDisconection = new(MessagePriority.Default, clientID);
+                netDisconection.CurrentMessageType = MessageType.Disconnection;
+                SendToServer(netDisconection.Serialize());
+
+                port = new NetAssignServerMessage(data).GetData();
+
+                InitializeClientWithDelay(10);
+
+                break;
+
+            case MessageType.MatchMakerToClientHandShake:
+
+
+                clientID = new NetIDMessage(data).GetData();
+                if (checkActivity == null)
+                {
+                    pingPong = new ClientPingPong(this);
+                    checkActivity = pingPong;
+                    onInitPingPong?.Invoke();
+                }
+
+                if (NetworkScreen.Instance.isInMenu)
+                {
+                    NetworkScreen.Instance.SwitchToChatScreen();
+                }
+
+                OnNewPlayer?.Invoke(new NetIDMessage(data).GetData());
 
                 break;
 
@@ -157,7 +207,7 @@ public class NetworkClient : NetworkEntity
 
             case MessageType.Console:
 
-                UpdateChatText(data, ip);
+                UpdateChatText(data);
 
                 break;
 
@@ -207,7 +257,8 @@ public class NetworkClient : NetworkEntity
                 NetErrorMessage netErrorMessage = new(data);
                 NetworkScreen.Instance.SwitchToMenuScreen();
                 NetworkScreen.Instance.ShowErrorPanel(netErrorMessage.GetData());
-                connection.Close();
+
+                CloseConnection();
 
                 break;
 
@@ -229,7 +280,6 @@ public class NetworkClient : NetworkEntity
 
     void OnReceivedMessagePriority(byte[] data)
     {
-
         if (MessageChecker.IsSorteableMessage(data))
         {
             sortableMessage?.OnRecievedData(data, -1);
@@ -248,6 +298,9 @@ public class NetworkClient : NetworkEntity
     {
         nondisposablesMessages?.AddSentMessages(data);
         connection.Send(data);
+        
+      //  string s = "SEND = " + MessageChecker.CheckMessageType(data) + " - " + MessageChecker.CheckMessagePriority(data) + "[" + DateTime.UtcNow + "]";
+      //  Debug.Log(s);
     }
 
     /// <summary>
@@ -255,7 +308,7 @@ public class NetworkClient : NetworkEntity
     /// </summary>
     /// <param name="data">The message data received.</param>
     /// <param name="ip">The IP endpoint of the client.</param>
-    protected override void UpdateChatText(byte[] data, IPEndPoint ip)
+    protected override void UpdateChatText(byte[] data)
     {
         string messageText = "";
 
@@ -281,6 +334,14 @@ public class NetworkClient : NetworkEntity
     public override void CloseConnection()
     {
         connection.Close();
+
+        gm.RemoveAllPlayers();
+
+        checkActivity = null;
+        pingPong = null;
+        nondisposablesMessages = null;
+        sortableMessage = null;
+
         NetworkScreen.Instance.SwitchToMenuScreen();
     }
 

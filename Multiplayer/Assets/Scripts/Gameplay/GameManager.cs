@@ -8,9 +8,6 @@ using UnityEngine;
 public class GameManager : MonoBehaviourSingleton<GameManager>
 {
     public Action<int> OnBulletHit;
-
-
-
     public Action<bool> OnInitLobbyTimer;
     public Action OnInitGameplayTimer;
 
@@ -59,6 +56,8 @@ public class GameManager : MonoBehaviourSingleton<GameManager>
         {
             pc.clientID = index;
 
+            pc.enabled = false;
+
             if (index != nm.ClientID)
             {
                 pc.currentPlayer = false;
@@ -66,11 +65,6 @@ public class GameManager : MonoBehaviourSingleton<GameManager>
             else
             {
                 pc.currentPlayer = true;
-            }
-
-            if (!nm.isServer)
-            {
-                pc.enabled = false;
             }
         }
     }

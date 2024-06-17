@@ -59,6 +59,7 @@ namespace Net
         void OnReceive(IAsyncResult ar)
         {
             DataReceived dataReceived = new DataReceived();
+
             try
             {
                 dataReceived.data = connection.EndReceive(ar, ref dataReceived.ipEndPoint);
@@ -70,13 +71,12 @@ namespace Net
             }
             finally
             {
-
                 lock (handler)
                 {
-                    dataReceivedQueue.Enqueue(dataReceived);
-                }
+                    connection.BeginReceive(OnReceive, null);
 
-                connection.BeginReceive(OnReceive, null);
+                }
+                dataReceivedQueue.Enqueue(dataReceived);
             }
         }
 

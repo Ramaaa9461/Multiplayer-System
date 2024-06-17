@@ -1,0 +1,36 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v5.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v5.0": {
+      "NetworkServer/1.0.0": {
+        "dependencies": {
+          "Network_Lib": "1.0.0"
+        },
+        "runtime": {
+          "NetworkServer.dll": {}
+        }
+      },
+      "Network_Lib/1.0.0": {
+        "runtime": {
+          "Network_Lib.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "NetworkServer/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Network_Lib/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Net
 {
-    class NetAssignServerMessage : BaseMessage<int>
+    public class NetAssignServerMessage : BaseMessage<int>
     {
         int port;
 

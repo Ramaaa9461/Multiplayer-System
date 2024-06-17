@@ -45,7 +45,7 @@ public class Server : NetworkEntity
     /// Starts the server on the specified port.
     /// </summary>
     /// <param name="port">The port to listen on.</param>
-    public Server( int port, DateTime appStartTime) : base()
+    public Server(int port, DateTime appStartTime) : base()
     {
         this.port = port;
 
@@ -220,6 +220,10 @@ public class Server : NetworkEntity
         {
             nondisponsableMessage?.AddSentMessages(data, ipToId[ip]);
         }
+
+       //  string s = "SEND FROM SERVER = " + MessageChecker.CheckMessageType(data) + " - " + MessageChecker.CheckMessagePriority(data) + "[" + DateTime.UtcNow + "]";
+       //  Console.WriteLine(s);
+
         connection.Send(data, ip);
     }
 
@@ -233,8 +237,7 @@ public class Server : NetworkEntity
         {
             while (iterator.MoveNext())
             {
-                nondisponsableMessage?.AddSentMessages(data, iterator.Current.Value.id);
-                connection.Send(data, iterator.Current.Value.ipEndPoint);
+                Broadcast(data, iterator.Current.Value.ipEndPoint);
             }
         }
     }
@@ -354,7 +357,7 @@ public class Server : NetworkEntity
         }
 
         connection.Close();
-  //      System.Diagnostics.Process.GetCurrentProcess().Kill;
+        //      System.Diagnostics.Process.GetCurrentProcess().Kill;
     }
 
     /// <summary>

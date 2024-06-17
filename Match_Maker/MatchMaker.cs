@@ -48,7 +48,7 @@ namespace Match_Maker
         List<Process> serversApplicationRunnnig = new();
 
         int minPlayerToStartGame = 2;
-        int servesPort = 0;
+        int serverPort = 0;
 
         /// <summary>
         /// Starts the server on the specified port.
@@ -57,7 +57,7 @@ namespace Match_Maker
         public MatchMaker(int port, DateTime appStartTime) : base()
         {
             this.port = port;
-            servesPort = port;
+            serverPort = port;
 
             connection = new UdpConnection(port, this);
 
@@ -89,16 +89,9 @@ namespace Match_Maker
                 pingPong.AddClientForList(newClientID);
                 OnNewPlayer?.Invoke(newClientID);
 
-                List<(int, string)> playersInServer = new();
-
-                foreach (int id in clients.Keys)
-                {
-                    playersInServer.Add((clients[id].id, clients[id].clientName));
-                }
-
-                //TODO: Chequear como va a reaccionar el MM contra un handShake
-                // ServerToClientHandShake serverToClient = new(MessagePriority.NonDisposable, playersInServer);
-                // Broadcast(serverToClient.Serialize());
+                NetIDMessage netIDMessage = new(MessagePriority.NonDisposable, newClientID);
+                netIDMessage.CurrentMessageType = MessageType.MatchMakerToClientHandShake;
+                Broadcast(netIDMessage.Serialize(), ip);
 
                 CheckPlayerInLobby();
             }
@@ -134,8 +127,19 @@ namespace Match_Maker
         /// <param name="ip">The IP address of the sender.</param>
         public override void OnReceiveData(byte[] data, IPEndPoint ip)
         {
-            // Invoke the event to notify listeners about the received message
+            if (data == null || ip == null)
+            {
+                Console.WriteLine("El mensaje o la ip no son validos");
+                return;
+            }
+
             OnReceivedMessage?.Invoke(data, ip);
+
+            if (data != null && MessageChecker.CheckMessageType(data) != MessageType.Ping && ipToId.ContainsKey(ip))
+            {
+                Console.WriteLine("RECEIVE (" + ipToId[ip] + ") = " + MessageChecker.CheckMessageType(data) + " - " + MessageChecker.CheckMessagePriority(data));
+            }
+
 
             OnReceivedMessagePriority(data, ip);
 
@@ -211,6 +215,12 @@ namespace Match_Maker
             {
                 nondisponsableMessage?.AddSentMessages(data, ipToId[ip]);
             }
+
+            if (data != null && MessageChecker.CheckMessageType(data) != MessageType.Ping && MessageChecker.CheckMessageType(data) != MessageType.Position)
+            {
+                Console.WriteLine("SEND (" + ipToId[ip] + ")= " + MessageChecker.CheckMessageType(data) + " - " + MessageChecker.CheckMessagePriority(data) + "[" + DateTime.UtcNow + "]");
+            }
+
             connection.Send(data, ip);
         }
 
@@ -293,8 +303,6 @@ namespace Match_Maker
         /// <param name="ip">The IP endpoint of the client.</param>
         protected override void UpdateChatText(byte[] data)
         {
-            NetMessage netMessage = new(data);
-
             Broadcast(data);
         }
 
@@ -325,7 +333,7 @@ namespace Match_Maker
                 RemoveClient(clientId);
             }
 
-            foreach ( Process process in serversApplicationRunnnig)
+            foreach (Process process in serversApplicationRunnnig)
             {
                 process.Close();
             }
@@ -358,7 +366,9 @@ namespace Match_Maker
 
         void CheckPlayerInLobby()
         {
-            if (clients.Count < 1)
+            Console.WriteLine("Clients count: " + clients.Count);
+
+            if (clients.Count < minPlayerToStartGame)
             {
                 return;
             }
@@ -384,7 +394,9 @@ namespace Match_Maker
                 foreach (Client client in toUpperClients)
                 {
                     //Mando un NetAssignMessage
-                    Console.WriteLine($"Re direct client {client.id} - {client.clientName} To new server in port {newServerPort} ");
+                    NetAssignServerMessage netAssignServerMessage = new(MessagePriority.NonDisposable, newServerPort);
+                    Console.WriteLine($"Re direct client {client.id} - {client.clientName} To new server in port {newServerPort}");
+                    Broadcast(netAssignServerMessage.Serialize(), client.ipEndPoint);
                 }
                 return;
             }
@@ -397,6 +409,8 @@ namespace Match_Maker
                 {
                     //Mando un NetAssignMessage
                     Console.WriteLine($"Re direct client {client.id} - {client.clientName} To new server in port {newServerPort} ");
+                    NetAssignServerMessage netAssignServerMessage = new(MessagePriority.NonDisposable, newServerPort);
+                    Broadcast(netAssignServerMessage.Serialize(), client.ipEndPoint);
                 }
                 return;
             }
@@ -405,24 +419,29 @@ namespace Match_Maker
 
         int CreateNewServer()
         {
-            servesPort++;
+            serverPort++;
 
-            serversApplicationRunnnig.Add(CreateServerProcess(servesPort));
-            return servesPort;
+            serversApplicationRunnnig.Add(CreateServerProcess(serverPort));
+            return serverPort;
         }
 
         Process CreateServerProcess(int numberPort)
         {
             Process currentServer;
             ProcessStartInfo startInfo = new ProcessStartInfo();
-            
-            string serverPath = Directory.GetParent(AppContext.BaseDirectory).Parent.Parent.Parent.Parent.FullName + "\\NetworkServer\\bin\\Debug\\net5.0\\NetworkServer.exe";
+
+            string serverPath = Directory.GetParent(AppContext.BaseDirectory).Parent.Parent.Parent.Parent.FullName + "\\NetworkServer\\bin\\Debug\\net5.0\\net5.0\\NetworkServer.exe";
 
             startInfo.FileName = serverPath;
             startInfo.Arguments = numberPort.ToString();
 
+            startInfo.UseShellExecute = true;
+            startInfo.CreateNoWindow = false;
+            startInfo.WindowStyle = ProcessWindowStyle.Normal;
+
             currentServer = Process.Start(startInfo);
-            
+            Console.WriteLine($"MM succesfully create Server id{currentServer.Id} in port {numberPort} ({DateTime.UtcNow})");
+
             return currentServer;
         }
 
