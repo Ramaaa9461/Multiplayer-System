@@ -5,12 +5,12 @@ using UnityEngine.Events;
 namespace Game
 {
 
-    public class bulletBehaviour : MonoBehaviour
+    public class bulletBehaviour : MonoBehaviour, IService
     {
         [SerializeField] float velocity;
         [SerializeField] float gravity = 9.8f;  // Valor de la gravedad
         private Vector3 velocityVector;
- 
+
         int originPlayerID = -1;
 
         private void Start()
@@ -45,6 +45,11 @@ namespace Game
             }
 
             Destroy(gameObject);
+        }
+
+        public int GetID()
+        {
+            return 1;
         }
     }
 }

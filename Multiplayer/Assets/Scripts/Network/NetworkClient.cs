@@ -205,6 +205,28 @@ public class NetworkClient : NetworkEntity
 
                 break;
 
+            case MessageType.Instance:
+
+                InstancePayload instancePayload = new InstanceMessage(data).GetData();
+
+                // Obtengo los prefabs ID del objeto y el padre;
+                GameObject prefab = null;
+                GameObject parent = null;
+                GameObject instance = MonoBehaviour.Instantiate(prefab, new Vector3(instancePayload.position.x, instancePayload.position.y, instancePayload.position.z),
+                                                   Quaternion.Euler(instancePayload.rotation.x, instancePayload.rotation.y, instancePayload.rotation.z),
+                                                    parent.transform);
+
+                instance.transform.localScale = new Vector3(instancePayload.scale.x, instancePayload.scale.y, instancePayload.scale.z);
+
+                if (instance.TryGetComponent(out INetObj obj))
+                {
+                    obj.GetNetObj().SetValues(instancePayload.instanceId, instancePayload.ownerId);
+                }
+
+                // Esta Instance la tengo que sumar a la lista de objetos de reflection.
+
+                break;
+
             case MessageType.Console:
 
                 UpdateChatText(data);

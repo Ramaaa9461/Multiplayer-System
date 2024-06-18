@@ -43,6 +43,13 @@ public class GameManager : MonoBehaviourSingleton<GameManager>
         nm.networkEntity.OnInstantiateBullet += InstantiatePlayerBullets;
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            NetObjectFactory.NetInstance(playerPrefab, Vector3.zero, Quaternion.identity, Vector3.zero, null);
+        }
+    }
     void SpawnPlayerPefab(int index)
     {
         if (!playerList.ContainsKey(index))

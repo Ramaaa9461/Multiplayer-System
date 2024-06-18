@@ -4,55 +4,65 @@ using System.Text;
 
 namespace Net
 {
-    public struct NetObjPackage
+    public struct InstancePayload
     {
-        public int   instanceId;
+        public int instanceId;
+        public int ownerId;
+
+        public int objectId;
         public Vec3 position;
         public Vec3 rotation;
         public Vec3 scale;
-        public int  parentInstanceID;
+        public int parentInstanceID;
 
-        public NetObjPackage(int instanceId, Vec3 position, Vec3 rotation, Vec3 scale, int parentInstanceID)
+
+        public InstancePayload(int instanceId, int ownerId, int objectId, Vec3 position, Vec3 rotation, Vec3 scale, int parentInstanceID)
         {
             this.instanceId = instanceId;
+            this.ownerId = ownerId;
+
+            this.objectId = objectId;
             this.position = position;
             this.rotation = rotation;
             this.scale = scale;
             this.parentInstanceID = parentInstanceID;
         }
-
     }
 
- public   class NetObjectMessage : BaseMessage<NetObjPackage>
+    public class InstanceMessage : BaseMessage<InstancePayload>
     {
-        private NetObjPackage data;
+        private InstancePayload data;
 
-        public NetObjectMessage(MessagePriority messagePriority, NetObjPackage data) : base(messagePriority)
+        public InstanceMessage(MessagePriority messagePriority, InstancePayload data) : base(messagePriority)
         {
-            currentMessageType = MessageType.NetObject;
+            currentMessageType = MessageType.Instance;
             this.data = data;
         }
 
-        public NetObjectMessage(byte[] data) : base(MessagePriority.Default)
+        public InstanceMessage(byte[] data) : base(MessagePriority.Default)
         {
-            currentMessageType = MessageType.NetObject;
+            currentMessageType = MessageType.Instance;
             this.data = Deserialize(data);
         }
 
-        public NetObjPackage GetData()
+        public InstancePayload GetData()
         {
             return data;
         }
 
-        public override NetObjPackage Deserialize(byte[] message)
+        public override InstancePayload Deserialize(byte[] message)
         {
-            NetObjPackage outData = new NetObjPackage();
+            InstancePayload outData = new InstancePayload();
 
             if (MessageChecker.DeserializeCheckSum(message))
             {
                 DeserializeHeader(message);
 
                 outData.instanceId = BitConverter.ToInt32(message, messageHeaderSize);
+                messageHeaderSize += sizeof(int);
+                outData.ownerId = BitConverter.ToInt32(message, messageHeaderSize);
+                messageHeaderSize += sizeof(int);
+                outData.objectId = BitConverter.ToInt32(message, messageHeaderSize);
                 messageHeaderSize += sizeof(int);
 
                 outData.position = DeserializeVec3(message, ref messageHeaderSize);
@@ -72,6 +82,9 @@ namespace Net
             SerializeHeader(ref outData);
 
             outData.AddRange(BitConverter.GetBytes(data.instanceId));
+            outData.AddRange(BitConverter.GetBytes(data.ownerId));
+
+            outData.AddRange(BitConverter.GetBytes(data.objectId));
             SerializeVec3(ref outData, data.position);
             SerializeVec3(ref outData, data.rotation);
             SerializeVec3(ref outData, data.scale);

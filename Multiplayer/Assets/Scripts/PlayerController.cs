@@ -3,11 +3,18 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    [SerializeField, NetVariable(1)] TowerTurns towerTurns;
+    [SerializeField, NetVariable(2)] TankMovement movement;
+
     [SerializeField] Transform cameraPivot;
-    public int health = 3;
+
+    [NetVariable(0)] public int health = 3;
 
     public bool currentPlayer = false;
     public int clientID = -1;
+
+    //Esta clase seria el punto de entrada para reflection de los players
+    //Deberia contener todos los scripts que envien informacion por ej TowerTurns o movement si queremos enviar sus datos
 
     GameManager gm;
     NetworkManager nm;

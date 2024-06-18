@@ -330,6 +330,8 @@ MonoBehaviour:
   health: 3
   currentPlayer: 0
   clientID: -1
+  towerTurns: {fileID: 888843024134725453}
+  movement: {fileID: 4467788783669252480}
 --- !u!114 &4467788783669252480
 MonoBehaviour:
   m_ObjectHideFlags: 0

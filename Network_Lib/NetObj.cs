@@ -11,5 +11,21 @@ namespace Net
             id = netObjId;
             this.ownerId = ownerId;
         }
+
+        public void SetValues(int id, int ownerId)
+        {
+            this.id = id;
+            this.ownerId = ownerId;
+        }
+
+
+        public int OwnerId
+        {
+            get { return ownerId; }
+        }
+        public int ID
+        {
+            get { return id; }
+        }
     }
 }

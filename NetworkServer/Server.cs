@@ -41,6 +41,8 @@ public class Server : NetworkEntity
     ServerSortableMessage sortableMessage;
     ServerNondisponsableMessage nondisponsableMessage;
 
+    int instancesIdCount = 0;
+
     /// <summary>
     /// Starts the server on the specified port.
     /// </summary>
@@ -147,7 +149,19 @@ public class Server : NetworkEntity
                 UpdateChatText(data);
 
                 break;
+            case MessageType.InstanceRequest:
 
+                InstanceRequestPayload instanceRequest = new InstanceRequestMenssage(data).GetData();
+
+                InstancePayload instancePayload = new(instancesIdCount, ipToId[ip], instanceRequest.objectId, instanceRequest.position, instanceRequest.rotation, instanceRequest.scale, instanceRequest.parentInstanceID);
+
+                InstanceMessage instanceMessage = new(MessagePriority.NonDisposable, instancePayload);
+                SendMessage(data);
+
+                instancesIdCount++;
+
+                break;
+                
             case MessageType.Position:
 
                 NetVector3 netVector3 = new(data);
