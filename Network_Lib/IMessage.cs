@@ -15,6 +15,7 @@ namespace Net
     public enum MessageType
     {
         Default = -100,
+        NetObject = -8,
         Ping = -7,
         AssignServer = -6,
         Confirm = -5,

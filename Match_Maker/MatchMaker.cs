@@ -125,14 +125,10 @@ namespace Match_Maker
         /// </summary>
         /// <param name="data">The data received.</param>
         /// <param name="ip">The IP address of the sender.</param>
-        public override void OnReceiveData(byte[] data, IPEndPoint ip)
+        public override void OnReceiveData(byte[] data, IPEndPoint ip) 
         {
-            if (data == null || ip == null)
-            {
-                Console.WriteLine("El mensaje o la ip no son validos");
-                return;
-            }
-
+            //TODO: a veces llegan mensajes de un ip que no esta contenida por el clients
+            
             OnReceivedMessage?.Invoke(data, ip);
 
             if (data != null && MessageChecker.CheckMessageType(data) != MessageType.Ping && ipToId.ContainsKey(ip))
@@ -214,11 +210,6 @@ namespace Match_Maker
             if (ipToId.ContainsKey(ip))
             {
                 nondisponsableMessage?.AddSentMessages(data, ipToId[ip]);
-            }
-
-            if (data != null && MessageChecker.CheckMessageType(data) != MessageType.Ping && MessageChecker.CheckMessageType(data) != MessageType.Position)
-            {
-                Console.WriteLine("SEND (" + ipToId[ip] + ")= " + MessageChecker.CheckMessageType(data) + " - " + MessageChecker.CheckMessagePriority(data) + "[" + DateTime.UtcNow + "]");
             }
 
             connection.Send(data, ip);

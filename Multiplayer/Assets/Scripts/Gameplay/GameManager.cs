@@ -56,8 +56,6 @@ public class GameManager : MonoBehaviourSingleton<GameManager>
         {
             pc.clientID = index;
 
-            pc.enabled = false;
-
             if (index != nm.ClientID)
             {
                 pc.currentPlayer = false;
@@ -96,7 +94,7 @@ public class GameManager : MonoBehaviourSingleton<GameManager>
 
     void InstantiatePlayerBullets(int id, Vec3 bulletDir)
     {
-        playerList[id].GetComponent<PlayerController>().ServerShoot(new Vector3(bulletDir.x, bulletDir.y, bulletDir.z));
+   //     playerList[id].GetComponent<PlayerController>().ServerShoot(new Vector3(bulletDir.x, bulletDir.y, bulletDir.z));
         playerList[id].GetComponent<AudioSource>().Play();
         playerList[id].GetComponent<Animator>().SetTrigger("Shoot");
     }
