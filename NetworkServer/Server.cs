@@ -153,15 +153,20 @@ public class Server : NetworkEntity
 
                 InstanceRequestPayload instanceRequest = new InstanceRequestMenssage(data).GetData();
 
-                InstancePayload instancePayload = new(instancesIdCount, ipToId[ip], instanceRequest.objectId, instanceRequest.position, instanceRequest.rotation, instanceRequest.scale, instanceRequest.parentInstanceID);
+                InstancePayload instancePayload = new(instancesIdCount, ipToId[ip], instanceRequest.objectId,
+                                                                       instanceRequest.positionX, instanceRequest.positionY, instanceRequest.positionZ,
+                                                                       instanceRequest.rotationX, instanceRequest.rotationY, instanceRequest.rotationZ, instanceRequest.rotationW,
+                                                                       instanceRequest.scaleX, instanceRequest.scaleY, instanceRequest.scaleZ, instanceRequest.parentInstanceID);
 
                 InstanceMessage instanceMessage = new(MessagePriority.NonDisposable, instancePayload);
-                SendMessage(data);
+
+                Console.WriteLine("Send Intance Message");
+                SendMessage(instanceMessage.Serialize());
 
                 instancesIdCount++;
 
                 break;
-                
+
             case MessageType.Position:
 
                 NetVector3 netVector3 = new(data);
@@ -235,8 +240,8 @@ public class Server : NetworkEntity
             nondisponsableMessage?.AddSentMessages(data, ipToId[ip]);
         }
 
-       //  string s = "SEND FROM SERVER = " + MessageChecker.CheckMessageType(data) + " - " + MessageChecker.CheckMessagePriority(data) + "[" + DateTime.UtcNow + "]";
-       //  Console.WriteLine(s);
+        //  string s = "SEND FROM SERVER = " + MessageChecker.CheckMessageType(data) + " - " + MessageChecker.CheckMessagePriority(data) + "[" + DateTime.UtcNow + "]";
+        //  Console.WriteLine(s);
 
         connection.Send(data, ip);
     }

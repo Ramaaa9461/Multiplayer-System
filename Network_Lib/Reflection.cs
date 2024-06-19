@@ -1,17 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 
 namespace Net
 {
     public class Reflection
     {
         BindingFlags bindingFlags;
+        Assembly excuteAssembly;
 
-        void Initialize() //Necesito una referencia al Factory de NetObj
+        List<NetObj> netObjs = new List<NetObj>();
+
+        public Reflection() //Necesito una referencia al Factory de NetObj - LA FACTORY ESTA EN UNITY
         {
+            excuteAssembly = Assembly.GetExecutingAssembly(); //El Asembly de la lib? Cual necesito?
+
             bindingFlags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly;
+        }
+
+        public void UpdateReflection()
+        {
+            if (netObjs.Count <= 0)
+            {
+                return;
+            }
+
+            foreach (NetObj netObj in netObjs)
+            {
+                Inspect(netObj.GetType(), netObj);
+            }
         }
 
         public void Inspect(Type type, object obj)
@@ -63,6 +80,14 @@ namespace Net
             object packageObj = info.GetValue(obj);
 
             packageObj.GetType();  //Por reflection hay qe obtener todos los tipos de mensajes y creo el tipo de mensaje que coincida con getType
+
+            foreach (Type type in excuteAssembly.GetTypes())
+            {
+                Console.WriteLine($"Tipo encontrado: {type.FullName}");
+
+                // Puedes realizar más operaciones con cada tipo aquí
+                // Por ejemplo, verificar atributos, crear instancias, etc.
+            }
 
             //TODO: Falta el SendMessage, necesito una refe de networkEntity   
         }

@@ -1,10 +1,9 @@
+using Net;
 using System.Collections;
 using UnityEngine;
 
 public class TowerTurns : MonoBehaviour
 {
-    [NetVariable(0, Net.MessagePriority.Sorteable)] Vector3 towerTurnsPosition;
-    
     [SerializeField] float duration;
     [SerializeField] Transform initialPositionShooting;
     [SerializeField] GameObject bulletPrefab;
@@ -18,8 +17,6 @@ public class TowerTurns : MonoBehaviour
     {
         cam = Camera.main;
         playerController = GetComponentInParent<PlayerController>();
-
-        towerTurnsPosition = transform.position;
     }
 
     void Update()
@@ -38,7 +35,22 @@ public class TowerTurns : MonoBehaviour
 
     void Shoot()
     {
-        Instantiate(bulletPrefab, initialPositionShooting.position, initialPositionShooting.rotation);
+        IPrefabService prefabService = ServiceProvider.GetService<IPrefabService>();
+        int prefabID = prefabService.GetIdByPrefab(bulletPrefab);
+
+        //        if (parentGameObject != null && parentGameObject.TryGetComponent(out INetObj netObj)) //COMO OBTENER EL PARENT ID
+        //        {
+        //            parentId = netObj.GetID();
+        //        }
+
+        Debug.Log(prefabID);
+
+        NetObjFactory.NetInstance(prefabID, initialPositionShooting.position.x , initialPositionShooting.position.y, initialPositionShooting.position.z,
+                                     initialPositionShooting.rotation.x , initialPositionShooting.rotation.y, initialPositionShooting.rotation.z, initialPositionShooting.rotation.w,
+                                     bulletPrefab.transform.localScale.x, bulletPrefab.transform.localScale.y, bulletPrefab.transform.localScale.z,
+                                     -1);
+
+   //     Instantiate(bulletPrefab, initialPositionShooting.position, initialPositionShooting.rotation);
     }
 
     IEnumerator TurnTower()

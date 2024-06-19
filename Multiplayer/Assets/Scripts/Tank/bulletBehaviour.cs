@@ -1,17 +1,18 @@
 using UnityEngine;
-using UnityEngine.Events;
-
+using Net;
 
 namespace Game
 {
 
-    public class bulletBehaviour : MonoBehaviour, IService
+    public class bulletBehaviour : MonoBehaviour, INetObj
     {
         [SerializeField] float velocity;
         [SerializeField] float gravity = 9.8f;  // Valor de la gravedad
         private Vector3 velocityVector;
 
         int originPlayerID = -1;
+
+        NetObj netObj;
 
         private void Start()
         {
@@ -49,7 +50,17 @@ namespace Game
 
         public int GetID()
         {
-            return 1;
+            return netObj.ID;
+        }
+
+        public int GetOwnerID()
+        {
+            return netObj.OwnerId;
+        }
+
+        public NetObj GetNetObj()
+        {
+            return netObj;
         }
     }
 }

@@ -7,17 +7,41 @@ namespace Net
     public struct InstanceRequestPayload
     {
         public int objectId;
-        public Vec3 position;
-        public Vec3 rotation;
-        public Vec3 scale;
+
+        public float positionX;
+        public float positionY;
+        public float positionZ;
+
+        public float rotationX;
+        public float rotationY;
+        public float rotationZ;
+        public float rotationW;
+
+        public float scaleX;
+        public float scaleY;
+        public float scaleZ;
+
         public int parentInstanceID;
 
-        public InstanceRequestPayload(int instanceId, Vec3 position, Vec3 rotation, Vec3 scale, int parentInstanceID)
+        public InstanceRequestPayload(int instanceId, float positionX, float positionY, float positionZ,
+                                                       float rotationX, float rotationY, float rotationZ, float rotationW,
+                                                       float scaleX, float scaleY, float scaleZ, int parentInstanceID)
         {
             this.objectId = instanceId;
-            this.position = position;
-            this.rotation = rotation;
-            this.scale = scale;
+
+            this.positionX = positionX;
+            this.positionY = positionY;
+            this.positionZ = positionZ;
+
+            this.rotationX = rotationX;
+            this.rotationY = rotationY;
+            this.rotationZ = rotationZ;
+            this.rotationW = rotationW;
+
+            this.scaleX = scaleX;
+            this.scaleY = scaleY;
+            this.scaleZ = scaleZ;
+
             this.parentInstanceID = parentInstanceID;
         }
 
@@ -55,9 +79,29 @@ namespace Net
                 outData.objectId = BitConverter.ToInt32(message, messageHeaderSize);
                 messageHeaderSize += sizeof(int);
 
-                outData.position = DeserializeVec3(message, ref messageHeaderSize);
-                outData.rotation = DeserializeVec3(message, ref messageHeaderSize);
-                outData.scale = DeserializeVec3(message, ref messageHeaderSize);
+
+                outData.positionX = BitConverter.ToSingle(message, messageHeaderSize);
+                messageHeaderSize += sizeof(float);
+                outData.positionY = BitConverter.ToSingle(message, messageHeaderSize);
+                messageHeaderSize += sizeof(float);
+                outData.positionZ = BitConverter.ToSingle(message, messageHeaderSize);
+                messageHeaderSize += sizeof(float);
+
+                outData.rotationX = BitConverter.ToSingle(message, messageHeaderSize); ;
+                messageHeaderSize += sizeof(float);
+                outData.rotationY = BitConverter.ToSingle(message, messageHeaderSize); ;
+                messageHeaderSize += sizeof(float);
+                outData.rotationZ = BitConverter.ToSingle(message, messageHeaderSize); ;
+                messageHeaderSize += sizeof(float);
+                outData.rotationW = BitConverter.ToSingle(message, messageHeaderSize); ;
+                messageHeaderSize += sizeof(float);
+
+                outData.scaleX = BitConverter.ToSingle(message, messageHeaderSize);
+                messageHeaderSize += sizeof(float);
+                outData.scaleY = BitConverter.ToSingle(message, messageHeaderSize);
+                messageHeaderSize += sizeof(float);
+                outData.scaleZ = BitConverter.ToSingle(message, messageHeaderSize);
+                messageHeaderSize += sizeof(float);
 
                 outData.parentInstanceID = BitConverter.ToInt32(message, messageHeaderSize);
             }
@@ -72,9 +116,11 @@ namespace Net
             SerializeHeader(ref outData);
 
             outData.AddRange(BitConverter.GetBytes(data.objectId));
-            SerializeVec3(ref outData, data.position);
-            SerializeVec3(ref outData, data.rotation);
-            SerializeVec3(ref outData, data.scale);
+
+            SerializeVec3(ref outData, data.positionX, data.positionY, data.positionZ);
+            SerializeVec3(ref outData, data.rotationX, data.rotationY, data.rotationZ);
+            outData.AddRange(BitConverter.GetBytes(data.rotationW));
+            SerializeVec3(ref outData, data.scaleX, data.scaleY, data.scaleZ);
             outData.AddRange(BitConverter.GetBytes(data.parentInstanceID));
 
             SerializeQueue(ref outData);
@@ -82,25 +128,11 @@ namespace Net
             return outData.ToArray();
         }
 
-        void SerializeVec3(ref List<byte> outData, Vec3 vec3)
+        void SerializeVec3(ref List<byte> outData, float x, float y, float z)
         {
-            outData.AddRange(BitConverter.GetBytes(vec3.x));
-            outData.AddRange(BitConverter.GetBytes(vec3.y));
-            outData.AddRange(BitConverter.GetBytes(vec3.z));
-        }
-
-        Vec3 DeserializeVec3(byte[] message, ref int messageHeaderSize)
-        {
-            Vec3 outVec3 = Vec3.Zero;
-
-            outVec3.x = BitConverter.ToSingle(message, messageHeaderSize);
-            messageHeaderSize += sizeof(float);
-            outVec3.y = BitConverter.ToSingle(message, messageHeaderSize);
-            messageHeaderSize += sizeof(float);
-            outVec3.z = BitConverter.ToSingle(message, messageHeaderSize);
-            messageHeaderSize += sizeof(float);
-
-            return outVec3;
+            outData.AddRange(BitConverter.GetBytes(x));
+            outData.AddRange(BitConverter.GetBytes(y));
+            outData.AddRange(BitConverter.GetBytes(z));
         }
     }
 }

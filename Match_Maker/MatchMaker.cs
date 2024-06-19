@@ -87,7 +87,7 @@ namespace Match_Maker
                 ipToId[ip] = newClientID;
                 clients.Add(newClientID, new Client(ip, newClientID, (float)(DateTime.UtcNow - appStartTime).TotalSeconds, clientName));
                 pingPong.AddClientForList(newClientID);
-                OnNewPlayer?.Invoke(newClientID);
+                //OnNewPlayer?.Invoke(newClientID);  El Lobby no instanca a los players
 
                 NetIDMessage netIDMessage = new(MessagePriority.NonDisposable, newClientID);
                 netIDMessage.CurrentMessageType = MessageType.MatchMakerToClientHandShake;

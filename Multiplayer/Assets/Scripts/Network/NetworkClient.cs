@@ -210,20 +210,30 @@ public class NetworkClient : NetworkEntity
                 InstancePayload instancePayload = new InstanceMessage(data).GetData();
 
                 // Obtengo los prefabs ID del objeto y el padre;
-                GameObject prefab = null;
-                GameObject parent = null;
-                GameObject instance = MonoBehaviour.Instantiate(prefab, new Vector3(instancePayload.position.x, instancePayload.position.y, instancePayload.position.z),
-                                                   Quaternion.Euler(instancePayload.rotation.x, instancePayload.rotation.y, instancePayload.rotation.z),
-                                                    parent.transform);
+                IPrefabService prefabService = ServiceProvider.GetService<IPrefabService>();
+                GameObject prefab = prefabService.GetPrefabById(instancePayload.objectId);
+                INetObj parentObj = (NetObjFactory.GetINetObject(instancePayload.parentInstanceID));
 
-                instance.transform.localScale = new Vector3(instancePayload.scale.x, instancePayload.scale.y, instancePayload.scale.z);
+
+                GameObject instance = MonoBehaviour.Instantiate(prefab,new Vector3(instancePayload.positionX, instancePayload.positionY, instancePayload.positionZ),
+                                                                       new Quaternion(instancePayload.rotationX, instancePayload.rotationY, instancePayload.rotationZ, instancePayload.rotationW));
+
+                if (parentObj != null)
+                {
+                    instance.transform.SetParent(((GameObject)(parentObj as object)).transform);
+                }
+
+                instance.transform.localScale = new Vector3(instancePayload.scaleX, instancePayload.scaleY, instancePayload.scaleZ);
+
 
                 if (instance.TryGetComponent(out INetObj obj))
                 {
                     obj.GetNetObj().SetValues(instancePayload.instanceId, instancePayload.ownerId);
+
+                    NetObjFactory.AddINetObject(obj.GetID(), obj);
                 }
 
-                // Esta Instance la tengo que sumar a la lista de objetos de reflection.
+                NetworkManager.Instance.onInstanceCreated?.Invoke(instance);
 
                 break;
 
@@ -320,9 +330,9 @@ public class NetworkClient : NetworkEntity
     {
         nondisposablesMessages?.AddSentMessages(data);
         connection.Send(data);
-        
-      //  string s = "SEND = " + MessageChecker.CheckMessageType(data) + " - " + MessageChecker.CheckMessagePriority(data) + "[" + DateTime.UtcNow + "]";
-      //  Debug.Log(s);
+
+        //  string s = "SEND = " + MessageChecker.CheckMessageType(data) + " - " + MessageChecker.CheckMessagePriority(data) + "[" + DateTime.UtcNow + "]";
+        //  Debug.Log(s);
     }
 
     /// <summary>

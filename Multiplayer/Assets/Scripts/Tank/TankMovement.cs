@@ -1,6 +1,7 @@
+using Net;
 using UnityEngine;
 
-public class TankMovement : MonoBehaviour, IService
+public class TankMovement : MonoBehaviour
 {
     [NetVariable(0, Net.MessagePriority.Sorteable)] Vector3 tankPosition;
    
@@ -9,11 +10,6 @@ public class TankMovement : MonoBehaviour, IService
 
     PlayerController playerController;
     Rigidbody RB;
-
-    public int GetID()
-    {
-        return 0;
-    }
 
     void Awake()
     {

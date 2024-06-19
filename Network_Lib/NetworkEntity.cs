@@ -25,6 +25,7 @@ namespace Net
 
         public NetworkEntity()
         {
+            NetObjFactory.SetNetworkEntity(this);
         }
 
         public abstract void AddClient(IPEndPoint ip, int newClientID, string clientName);

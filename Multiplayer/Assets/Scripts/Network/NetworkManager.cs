@@ -10,12 +10,13 @@ public class NetworkManager : MonoBehaviourSingleton<NetworkManager>
     public NetworkEntity networkEntity;
 
     public Action onInitEntity;
-
+    public Action<GameObject> onInstanceCreated;
 
     public int ClientID
     {
         get { return networkEntity.clientID; }
     }
+
     public bool isServer
     {
         get { return !(networkEntity is NetworkClient); }

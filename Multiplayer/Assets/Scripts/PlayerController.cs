@@ -1,7 +1,7 @@
 using Net;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, INetObj
 {
     [SerializeField, NetVariable(1)] TowerTurns towerTurns;
     [SerializeField, NetVariable(2)] TankMovement movement;
@@ -12,6 +12,8 @@ public class PlayerController : MonoBehaviour
 
     public bool currentPlayer = false;
     public int clientID = -1;
+
+    NetObj netObj;
 
     //Esta clase seria el punto de entrada para reflection de los players
     //Deberia contener todos los scripts que envien informacion por ej TowerTurns o movement si queremos enviar sus datos
@@ -44,6 +46,21 @@ public class PlayerController : MonoBehaviour
             nm.networkEntity.SendMessage(netDisconnection.Serialize());
             nm.networkEntity.RemoveClient(clientID);
         }
+    }
+
+    public int GetID()
+    {
+        return netObj.ID;
+    }
+
+    public int GetOwnerID()
+    {
+        return netObj.OwnerId;
+    }
+
+    public NetObj GetNetObj()
+    {
+        return netObj;
     }
 }
 
