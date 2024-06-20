@@ -10,7 +10,7 @@ public class NetworkManager : MonoBehaviourSingleton<NetworkManager>
     public NetworkEntity networkEntity;
 
     public Action onInitEntity;
-    public Action<GameObject> onInstanceCreated;
+    public Action<int, GameObject> onInstanceCreated;
 
     public int ClientID
     {

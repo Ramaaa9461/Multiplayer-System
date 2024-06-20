@@ -33,6 +33,8 @@ public class GameManager : MonoBehaviourSingleton<GameManager>
         nm.onInitEntity += InitNetworkEntityActions;
         OnBulletHit += OnHitRecieved;
 
+        nm.onInstanceCreated += CheckForInstanceCreated;
+
         OnInitGameplayTimer += ActivePlayerControllers;
     }
 
@@ -47,25 +49,38 @@ public class GameManager : MonoBehaviourSingleton<GameManager>
     {
         if (!playerList.ContainsKey(index))
         {
-            playerList.Add(index, Instantiate(playerPrefab, spawnPositions[spawnCounter].position, Quaternion.identity));
+            if (index == nm.ClientID)
+            {
+                IPrefabService prefabService = ServiceProvider.GetService<IPrefabService>();
+
+                NetObjFactory.NetInstance(prefabService.GetIdByPrefab(playerPrefab),
+                                          spawnPositions[spawnCounter].position.x, spawnPositions[spawnCounter].position.y, spawnPositions[spawnCounter].position.z,
+                                          Quaternion.identity.x, Quaternion.identity.y, Quaternion.identity.z, Quaternion.identity.w,
+                                          playerPrefab.transform.localScale.x, playerPrefab.transform.localScale.y, playerPrefab.transform.localScale.z,
+                                          -1);
+            }
+
+            playerList.Add(index, null);
             OnChangeLobbyPlayers?.Invoke(index);
             spawnCounter++;
         }
+    }
 
-        if (playerList[index].TryGetComponent(out PlayerController pc))
+    void CheckForInstanceCreated(int owner, GameObject gameObject)
+    {
+        if (playerList.ContainsKey(owner))
         {
-            pc.clientID = index;
+            if (gameObject.TryGetComponent(out PlayerController pc)) //Confirmo que el objeto instanciado sea un player
+            {
+                playerList[owner] = gameObject;
+                Debug.Log("Se instancion el Gameobject: " + gameObject.name + " Del Owner " + owner);
 
-            if (index != nm.ClientID)
-            {
-                pc.currentPlayer = false;
-            }
-            else
-            {
-                pc.currentPlayer = true;
+                pc.clientID = owner;
+                pc.currentPlayer = owner == nm.ClientID;
             }
         }
     }
+
 
     void RemovePlayer(int index)
     {
@@ -94,7 +109,7 @@ public class GameManager : MonoBehaviourSingleton<GameManager>
 
     void InstantiatePlayerBullets(int id, Vec3 bulletDir)
     {
-   //     playerList[id].GetComponent<PlayerController>().ServerShoot(new Vector3(bulletDir.x, bulletDir.y, bulletDir.z));
+        //     playerList[id].GetComponent<PlayerController>().ServerShoot(new Vector3(bulletDir.x, bulletDir.y, bulletDir.z));
         playerList[id].GetComponent<AudioSource>().Play();
         playerList[id].GetComponent<Animator>().SetTrigger("Shoot");
     }

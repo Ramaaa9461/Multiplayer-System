@@ -144,7 +144,7 @@ public class NetworkClient : NetworkEntity
 
                 port = new NetAssignServerMessage(data).GetData();
 
-                InitializeClientWithDelay(10);
+                InitializeClientWithDelay(2);
 
                 break;
 
@@ -212,10 +212,10 @@ public class NetworkClient : NetworkEntity
                 // Obtengo los prefabs ID del objeto y el padre;
                 IPrefabService prefabService = ServiceProvider.GetService<IPrefabService>();
                 GameObject prefab = prefabService.GetPrefabById(instancePayload.objectId);
-                INetObj parentObj = (NetObjFactory.GetINetObject(instancePayload.parentInstanceID));
+                INetObj parentObj = NetObjFactory.GetINetObject(instancePayload.parentInstanceID);
 
 
-                GameObject instance = MonoBehaviour.Instantiate(prefab,new Vector3(instancePayload.positionX, instancePayload.positionY, instancePayload.positionZ),
+                GameObject instance = MonoBehaviour.Instantiate(prefab, new Vector3(instancePayload.positionX, instancePayload.positionY, instancePayload.positionZ),
                                                                        new Quaternion(instancePayload.rotationX, instancePayload.rotationY, instancePayload.rotationZ, instancePayload.rotationW));
 
                 if (parentObj != null)
@@ -231,9 +231,10 @@ public class NetworkClient : NetworkEntity
                     obj.GetNetObj().SetValues(instancePayload.instanceId, instancePayload.ownerId);
 
                     NetObjFactory.AddINetObject(obj.GetID(), obj);
+
+                    NetworkManager.Instance.onInstanceCreated?.Invoke(obj.GetOwnerID(), instance); //Enivo un evento con el objeto instanciado y su owner
                 }
 
-                NetworkManager.Instance.onInstanceCreated?.Invoke(instance);
 
                 break;
 

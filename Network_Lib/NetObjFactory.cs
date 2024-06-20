@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 
 namespace Net
@@ -7,7 +8,14 @@ namespace Net
     public static class NetObjFactory
     {
         static NetworkEntity entity; //Se usa para mandar los mensajes 
-        static Dictionary<int, INetObj> NetObjectsInstances = new Dictionary<int, INetObj>();
+        static readonly Dictionary<int, INetObj> NetObjectsInstances = new Dictionary<int, INetObj>();
+
+        public static List<INetObj> NetObjects => new List<INetObj>(NetObjectsInstances.Values);
+
+        public static int NetObjectsCount
+        {
+            get { return NetObjectsInstances.Count;  }
+        }
 
         public static void SetNetworkEntity(NetworkEntity networkEntity)
         {

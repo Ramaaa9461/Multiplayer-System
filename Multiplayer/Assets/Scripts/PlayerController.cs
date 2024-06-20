@@ -3,8 +3,8 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour, INetObj
 {
-    [SerializeField, NetVariable(1)] TowerTurns towerTurns;
-    [SerializeField, NetVariable(2)] TankMovement movement;
+    [SerializeField, NetVariable(1)] TowerTurns towerTurns;   //Esta clase seria el punto de entrada para reflection de los players
+    [SerializeField, NetVariable(2)] TankMovement movement; //Deberia contener todos los scripts que envien informacion por ej TowerTurns o movement si queremos enviar sus datos
 
     [SerializeField] Transform cameraPivot;
 
@@ -13,12 +13,8 @@ public class PlayerController : MonoBehaviour, INetObj
     public bool currentPlayer = false;
     public int clientID = -1;
 
-    NetObj netObj;
+    NetObj netObj = new(-1,-1);
 
-    //Esta clase seria el punto de entrada para reflection de los players
-    //Deberia contener todos los scripts que envien informacion por ej TowerTurns o movement si queremos enviar sus datos
-
-    GameManager gm;
     NetworkManager nm;
 
     static int positionMessageOrder = 1;
@@ -26,7 +22,6 @@ public class PlayerController : MonoBehaviour, INetObj
 
     private void Start()
     {
-        gm = GameManager.Instance;
         nm = NetworkManager.Instance;
 
         if (currentPlayer)
@@ -41,7 +36,6 @@ public class PlayerController : MonoBehaviour, INetObj
 
         if (health <= 0)
         {
-            //TODO: El server tiene que hecharlo de la partida
             NetIDMessage netDisconnection = new NetIDMessage(MessagePriority.Default, clientID);
             nm.networkEntity.SendMessage(netDisconnection.Serialize());
             nm.networkEntity.RemoveClient(clientID);

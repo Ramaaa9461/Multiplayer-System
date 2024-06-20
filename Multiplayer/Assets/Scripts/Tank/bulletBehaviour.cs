@@ -12,7 +12,7 @@ namespace Game
 
         int originPlayerID = -1;
 
-        NetObj netObj;
+        NetObj netObj = new NetObj(-1, -1);
 
         private void Start()
         {
@@ -34,14 +34,12 @@ namespace Game
 
         private void OnCollisionEnter(Collision collision)
         {
-            if (NetworkManager.Instance.isServer)
+            if (collision.transform.TryGetComponent(out PlayerController pc))
             {
-                if (collision.transform.TryGetComponent(out PlayerController pc))
+                if (pc.clientID != originPlayerID)
                 {
-                    if (pc.clientID != originPlayerID)
-                    {
-                        GameManager.Instance.OnBulletHit?.Invoke(pc.clientID);
-                    }
+                    pc.health--;
+                  //  GameManager.Instance.OnBulletHit?.Invoke(pc.clientID);
                 }
             }
 

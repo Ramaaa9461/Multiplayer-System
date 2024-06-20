@@ -182,7 +182,6 @@ namespace Match_Maker
                 default:
                     break;
             }
-
         }
 
         void OnReceivedMessagePriority(byte[] data, IPEndPoint ip)
@@ -377,7 +376,6 @@ namespace Match_Maker
 
             int newServerPort = CreateNewServer();
 
-
             if (upperUserNamesCount >= minPlayerToStartGame)
             {
                 List<Client> toUpperClients = clients.Where(c => IsToUpper(c.Value.clientName)).Take(minPlayerToStartGame).Select(pair => pair.Value).ToList();
@@ -407,7 +405,6 @@ namespace Match_Maker
             }
         }
 
-
         int CreateNewServer()
         {
             serverPort++;
@@ -435,8 +432,6 @@ namespace Match_Maker
 
             return currentServer;
         }
-
-
 
         protected override void UpdatePlayerPosition(byte[] data)
         {

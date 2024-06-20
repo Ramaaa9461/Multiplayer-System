@@ -9,25 +9,27 @@ namespace Net
         BindingFlags bindingFlags;
         Assembly excuteAssembly;
 
-        List<NetObj> netObjs = new List<NetObj>();
+        public Action<string> consoleDebugger;
 
-        public Reflection() //Necesito una referencia al Factory de NetObj - LA FACTORY ESTA EN UNITY
+        public Reflection()
         {
             excuteAssembly = Assembly.GetExecutingAssembly(); //El Asembly de la lib? Cual necesito?
 
             bindingFlags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly;
         }
 
+
         public void UpdateReflection()
         {
-            if (netObjs.Count <= 0)
+            consoleDebugger?.Invoke("Current net obj = " + NetObjFactory.NetObjectsCount);
+            if (NetObjFactory.NetObjectsCount <= 0)
             {
                 return;
             }
 
-            foreach (NetObj netObj in netObjs)
+            foreach (INetObj netObj in NetObjFactory.NetObjects)
             {
-                Inspect(netObj.GetType(), netObj);
+                Inspect(netObj.GetNetObj().GetType(), netObj);
             }
         }
 
@@ -59,6 +61,7 @@ namespace Net
         {
             if (info.FieldType.IsValueType || info.FieldType == typeof(string) || info.FieldType.IsEnum)
             {
+                consoleDebugger?.Invoke(info.Name + ": " + info.GetValue(obj));
                 Console.WriteLine(info.Name + ": " + info.GetValue(obj));
                 SendPackage(info, obj, attribute);
             }
@@ -136,7 +139,6 @@ namespace Net
             }
         }
     }
-
 
     public class NetVariable : Attribute
     {
