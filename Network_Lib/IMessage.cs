@@ -56,7 +56,15 @@ namespace Net
         T Deserialize(byte[] message);
     }
 
-    public abstract class BaseMessage<T> : IMessage<T>
+    public abstract class ParentBaseMessage
+    {
+        public string Test()
+        {
+            return "Holi";
+        }
+    }
+
+    public abstract class BaseMessage<T> : ParentBaseMessage, IMessage<T>
     {
         protected int messageHeaderSize = sizeof(int) * 2; //MessageType y MessagePriority
 

@@ -47,7 +47,7 @@ namespace Match_Maker
 
         List<Process> serversApplicationRunnnig = new();
 
-        int minPlayerToStartGame = 2;
+        int minPlayerToStartGame = 1;
         int serverPort = 0;
 
         /// <summary>

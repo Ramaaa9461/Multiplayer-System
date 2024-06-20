@@ -7,13 +7,13 @@ namespace Net
     public class Reflection
     {
         BindingFlags bindingFlags;
-        Assembly excuteAssembly;
+        Assembly executeAssembly;
 
         public Action<string> consoleDebugger;
 
         public Reflection()
         {
-            excuteAssembly = Assembly.GetExecutingAssembly(); //El Asembly de la lib? Cual necesito?
+            executeAssembly = Assembly.GetExecutingAssembly();
 
             bindingFlags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly;
         }
@@ -21,7 +21,6 @@ namespace Net
 
         public void UpdateReflection()
         {
-            consoleDebugger?.Invoke("Current net obj = " + NetObjFactory.NetObjectsCount);
             if (NetObjFactory.NetObjectsCount <= 0)
             {
                 return;
@@ -29,7 +28,7 @@ namespace Net
 
             foreach (INetObj netObj in NetObjFactory.NetObjects)
             {
-                Inspect(netObj.GetNetObj().GetType(), netObj);
+                Inspect(netObj.GetType(), netObj);
             }
         }
 
@@ -45,24 +44,24 @@ namespace Net
                     {
                         if (attribute is NetVariable)
                         {
-                            ReadValue(info, obj, attribute);
+                            ReadValue(info, obj, (NetVariable)attribute);
                         }
                     }
 
                     if (type.BaseType != null)
                     {
                         Inspect(type.BaseType, obj);
+
                     }
                 }
             }
         }
 
-        public void ReadValue(FieldInfo info, object obj, Attribute attribute)
+        public void ReadValue(FieldInfo info, object obj, NetVariable attribute)
         {
             if (info.FieldType.IsValueType || info.FieldType == typeof(string) || info.FieldType.IsEnum)
             {
                 consoleDebugger?.Invoke(info.Name + ": " + info.GetValue(obj));
-                Console.WriteLine(info.Name + ": " + info.GetValue(obj));
                 SendPackage(info, obj, attribute);
             }
             else if (typeof(System.Collections.ICollection).IsAssignableFrom(info.FieldType))
@@ -74,25 +73,48 @@ namespace Net
             }
             else
             {
+                consoleDebugger?.Invoke("Inspect: " + info.Name);
                 Inspect(info.FieldType, info.GetValue(obj));
             }
         }
 
-        public void SendPackage(FieldInfo info, object obj, Attribute attribute)
+        public void SendPackage(FieldInfo info, object obj, NetVariable attribute)
         {
-            object packageObj = info.GetValue(obj);
+            Type packageType = info.GetValue(obj).GetType();  //Por reflection hay qe obtener todos los tipos de mensajes y creo el tipo de mensaje que coincida con getType
 
-            packageObj.GetType();  //Por reflection hay qe obtener todos los tipos de mensajes y creo el tipo de mensaje que coincida con getType
-
-            foreach (Type type in excuteAssembly.GetTypes())
+            foreach (Type type in executeAssembly.GetTypes())
             {
-                Console.WriteLine($"Tipo encontrado: {type.FullName}");
+                if (type.IsClass && type.BaseType != null && type.BaseType.IsGenericType)
+                {
+                    Type[] genericTypes = type.BaseType.GetGenericArguments();
 
-                // Puedes realizar más operaciones con cada tipo aquí
-                // Por ejemplo, verificar atributos, crear instancias, etc.
+                    foreach (Type arg in genericTypes)
+                    {
+                        if (packageType == arg)
+                        {
+                            //Create message
+                            BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance;
+
+                            Type[] parametersToApply =
+                                { typeof(MessagePriority), packageType };
+
+                            object[] parameters = new[] { attribute.MessagePriority, info.GetValue(obj) };
+
+                            ConstructorInfo? ctor = type.GetConstructor(parametersToApply);
+
+                            consoleDebugger.Invoke("Contructor: " + ctor);
+
+                            if (ctor != null)
+                            {
+                                object message = ctor.Invoke(parameters);
+                                var a = (message as ParentBaseMessage);
+
+                                consoleDebugger.Invoke(a.Test());
+                            }
+                        }
+                    }
+                }
             }
-
-            //TODO: Falta el SendMessage, necesito una refe de networkEntity   
         }
 
         public void WriteInspect(Type type, object obj, byte[] data) //Type deberia ser siempre un NetObj y el obj lo saco de la lista del factory

@@ -38,9 +38,9 @@ namespace Net
         }
 
         public static void NetInstance(int gameObjectToIntanciateID, float positionX, float positionY, float positionZ,
-                                                                      float rotationX, float rotationY, float rotationZ, float rotationW,
-                                                                      float scaleX, float scaleY, float scaleZ,
-                                                                      int parentGameObjectID)
+                                                                     float rotationX, float rotationY, float rotationZ, float rotationW,
+                                                                     float scaleX, float scaleY, float scaleZ,
+                                                                     int parentGameObjectID)
         {
             InstanceRequestPayload instanceRequestPayload = new InstanceRequestPayload(gameObjectToIntanciateID,
                                                                        positionX, positionY, positionZ,
