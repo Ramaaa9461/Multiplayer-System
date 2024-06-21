@@ -26,7 +26,7 @@ namespace Net
 
             if (MessageChecker.DeserializeCheckSum(message))
             {
-                MessageChecker.DeserializeString(message, messageHeaderSize);
+                MessageChecker.DeserializeString(message, ref messageHeaderSize);
             }
             return data;
         }

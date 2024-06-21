@@ -43,6 +43,7 @@ namespace Game
                 }
             }
 
+            NetObjFactory.RemoveINetObject(GetID());
             Destroy(gameObject);
         }
 

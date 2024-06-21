@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class TowerTurns : MonoBehaviour
 {
-    [SerializeField] float duration;
+    [SerializeField, NetVariable(0)] float duration;
     [SerializeField] Transform initialPositionShooting;
     [SerializeField] GameObject bulletPrefab;
 

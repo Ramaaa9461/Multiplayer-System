@@ -34,7 +34,7 @@ namespace Net
 
             if (MessageChecker.DeserializeCheckSum(message))
             {
-                text = MessageChecker.DeserializeString(message, messageHeaderSize);
+                text = MessageChecker.DeserializeString(message,ref messageHeaderSize);
             }
 
             return text.ToCharArray();

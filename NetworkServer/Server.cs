@@ -128,6 +128,25 @@ public class Server : NetworkEntity
 
         switch (MessageChecker.CheckMessageType(data))
         {
+            case MessageType.Bool:
+            case MessageType.Byte:
+            case MessageType.Char:
+            case MessageType.Decimal:
+            case MessageType.Double:
+            case MessageType.Float:
+            case MessageType.Int:
+            case MessageType.Long:
+            case MessageType.Sbyte:
+            case MessageType.Short:
+            case MessageType.String:
+            case MessageType.Uint:
+            case MessageType.Ulong:
+            case MessageType.Ushort:
+
+                BroadcastPlayerPosition(ipToId[ip], data);
+
+                break;
+
             case MessageType.Ping:
 
                 if (ipToId.ContainsKey(ip))

@@ -27,6 +27,11 @@ namespace Net
             NetObjectsInstances[key] = netObj;
         }
 
+        public static void RemoveINetObject(int key)
+        {
+            NetObjectsInstances.Remove(key);
+        }
+
         public static INetObj GetINetObject(int key)
         {
             if (NetObjectsInstances.ContainsKey(key))

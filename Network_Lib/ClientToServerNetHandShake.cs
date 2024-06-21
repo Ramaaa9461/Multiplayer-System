@@ -33,7 +33,7 @@ namespace Net
                 outData.Item2 = BitConverter.ToInt32(message, messageHeaderSize);
                 messageHeaderSize += sizeof(int);
 
-                outData.Item3 = MessageChecker.DeserializeString(message, messageHeaderSize);
+                outData.Item3 = MessageChecker.DeserializeString(message, ref messageHeaderSize);
             }
 
             return outData;

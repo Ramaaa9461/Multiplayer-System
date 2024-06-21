@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour, INetObj
 {
-    [NetVariable(0)] public int health = 3;
+    [NetVariable(0)] public float health = 3;
     [SerializeField, NetVariable(1)] TowerTurns towerTurns;   //Esta clase seria el punto de entrada para reflection de los players
     [SerializeField, NetVariable(2)] TankMovement movement; //Deberia contener todos los scripts que envien informacion por ej TowerTurns o movement si queremos enviar sus datos
 

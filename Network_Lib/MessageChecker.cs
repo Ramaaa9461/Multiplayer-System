@@ -29,6 +29,21 @@ namespace Net
             return outData.ToArray();
         }
 
+        public static string DeserializeString(byte[] message, ref int indexToInit)
+        {
+            int stringSize = BitConverter.ToInt32(message, indexToInit);
+
+            char[] charArray = new char[stringSize];
+
+            indexToInit += sizeof(int);
+            for (int i = 0; i < stringSize; i++)
+            {
+                charArray[i] = BitConverter.ToChar(message, indexToInit + sizeof(char) * i);
+            }
+
+            return new string(charArray);
+        }
+
         public static string DeserializeString(byte[] message, int indexToInit)
         {
             int stringSize = BitConverter.ToInt32(message, indexToInit);
@@ -106,5 +121,4 @@ namespace Net
             return (CheckMessagePriority(data) & MessagePriority.NonDisposable) != 0;
         }
     }
-
 }

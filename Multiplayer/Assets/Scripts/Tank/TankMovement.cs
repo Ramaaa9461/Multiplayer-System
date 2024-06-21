@@ -3,8 +3,8 @@ using UnityEngine;
 
 public class TankMovement : MonoBehaviour
 {
-    [SerializeField] float velocityY;
-    [SerializeField] float velocityX;
+    [SerializeField, NetVariable(0)] float velocityY;
+    [SerializeField, NetVariable(1)] float velocityX;
 
     PlayerController playerController;
     Rigidbody RB;

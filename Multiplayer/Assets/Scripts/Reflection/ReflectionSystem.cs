@@ -9,7 +9,12 @@ public class ReflectionSystem : MonoBehaviour
 
     private void Start()
     {
-        reflection = new();
+        NetworkManager.Instance.onInitEntity += StartReflection;
+    }
+
+    void StartReflection()
+    {
+        reflection = new(NetworkManager.Instance.networkEntity);
         reflection.consoleDebugger += WriteConsoleDebugger;
     }
 

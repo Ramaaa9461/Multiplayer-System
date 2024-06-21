@@ -58,10 +58,7 @@ namespace Net
 
     public abstract class ParentBaseMessage
     {
-        public string Test()
-        {
-            return "Holi";
-        }
+        public abstract byte[] Serialize();
     }
 
     public abstract class BaseMessage<T> : ParentBaseMessage, IMessage<T>
@@ -148,7 +145,7 @@ namespace Net
             data.AddRange(MessageChecker.SerializeCheckSum(data));
         }
 
-        public abstract byte[] Serialize();
+       // public abstract byte[] Serialize();
 
         public abstract T Deserialize(byte[] message);
 
