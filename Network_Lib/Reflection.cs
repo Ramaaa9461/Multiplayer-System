@@ -12,6 +12,7 @@ namespace Net
         Assembly executeAssembly;
 
         public Action<string> consoleDebugger;
+        public Action consoleDebuggerPause;
 
         NetworkEntity networkEntity;
 
@@ -56,6 +57,8 @@ namespace Net
                     {
                         if (attribute is NetVariable)
                         {
+
+
                             ReadValue(info, obj, (NetVariable)attribute, new List<int>(idRoute));
                         }
                     }
@@ -73,6 +76,19 @@ namespace Net
             if (info.FieldType.IsValueType || info.FieldType == typeof(string) || info.FieldType.IsEnum)
             {
                 idRoute.Add(attribute.VariableId);
+
+                string debug = "";
+                debug += "Read values from Root Player (Owner: " + NetObjFactory.GetINetObject(idRoute[0]).GetOwnerID().ToString() + ") \n";
+                debug += "Se modifica la variable " + info + " que tiene un valor de " + info.GetValue(obj) + "\n";
+
+                debug += "La ruta de la variable es: ";
+                foreach (int item in idRoute)
+                {
+                    debug += item + " - ";
+                }
+
+                //consoleDebugger.Invoke(debug);
+
                 SendPackage(info, obj, attribute, idRoute);
             }
             else if (typeof(System.Collections.ICollection).IsAssignableFrom(info.FieldType))
@@ -114,6 +130,20 @@ namespace Net
                                 object message = ctor.Invoke(parameters);
                                 ParentBaseMessage a = message as ParentBaseMessage;
                                 networkEntity.SendMessage(a.Serialize());
+
+                                string debug = "";
+                                debug += "SEND PACKAGE Root Player (Owner: " + NetObjFactory.GetINetObject(idRoute[0]).GetOwnerID().ToString() + ") \n";
+                                debug += "Se modifica la variable " + info + " que tiene un valor de " + info.GetValue(obj) + "\n";
+                                debug += "El tipo de mensajes " + MessageChecker.CheckMessageType(a.Serialize()) + "\n";
+                                debug += "Al constructor se le paso: " + attribute.MessagePriority + " - " + info.GetValue(obj) + " - La ruta " + "\n";
+
+                                debug += "La ruta de la variable es: ";
+                                foreach (int item in idRoute)
+                                {
+                                    debug += item + " - ";
+                                }
+
+                                //consoleDebugger.Invoke(debug);
                             }
                         }
                     }
@@ -158,6 +188,10 @@ namespace Net
                 case MessageType.Byte:
                     break;
                 case MessageType.Bool:
+
+                    NetBoolMessage netBoolMessage = new NetBoolMessage(data);
+                    VariableMapping(netBoolMessage.GetMessageRoute(), netBoolMessage.GetData());
+
                     break;
             }
         }
@@ -224,12 +258,12 @@ namespace Net
                 foreach (FieldInfo info in type.GetFields(bindingFlags))
                 {
                     IEnumerable<Attribute> attributes = info.GetCustomAttributes();
-
                     foreach (Attribute attribute in attributes)
                     {
                         if (attribute is NetVariable && ((NetVariable)attribute).VariableId == idRoute[idToRead])
                         {
                             WriteValue(info, obj, (NetVariable)attribute, idRoute, idToRead, value);
+                            break;
                         }
                     }
 
@@ -246,7 +280,7 @@ namespace Net
             if (info.FieldType.IsValueType || info.FieldType == typeof(string) || info.FieldType.IsEnum)
             {
                 string debug = "";
-                debug += "Root Player (Owner: " + NetObjFactory.GetINetObject(idRoute[0]).GetOwnerID().ToString() + ") \n";
+                debug += "Write values from Root Player (Owner: " + NetObjFactory.GetINetObject(idRoute[0]).GetOwnerID().ToString() + ") \n";
                 debug += "Se modifica la variable " + info + " que tiene un valor de " + info.GetValue(obj) + ". El nuevo valor a asignar es: " + value + "\n";
 
                 debug += "La ruta de la variable es: ";
@@ -262,12 +296,13 @@ namespace Net
             {
                 foreach (object item in (info.GetValue(obj) as System.Collections.ICollection))
                 {
-                    InspectWrite(item.GetType(), item, idRoute, idToRead++, value);
+                    InspectWrite(item.GetType(), item, idRoute, idToRead, value);
                 }
             }
             else
             {
-                InspectWrite(info.FieldType, info.GetValue(obj), idRoute, idToRead++, value);
+                idToRead++;
+                InspectWrite(info.FieldType, info.GetValue(obj), idRoute, idToRead, value);
             }
         }
 

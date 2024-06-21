@@ -4,20 +4,20 @@ using System.Text;
 
 namespace Net
 {
+
+
     [NetMessageClass(typeof(NetFloatMessage), MessageType.Float)]
-    class NetFloatMessage : BaseMessage<float>
+    class NetFloatMessage : BaseReflectionMessage<float>
     {
         float data;
-        List<int> messageRoute = new List<int>();
 
-        public NetFloatMessage(MessagePriority messagePriority, float data, List<int> messageRoute) : base(messagePriority)
+        public NetFloatMessage(MessagePriority messagePriority, float data, List<int> messageRoute) : base(messagePriority, messageRoute)
         {
             currentMessageType = MessageType.Float;
-            this.messageRoute = messageRoute;
             this.data = data;
         }
 
-        public NetFloatMessage(byte[] data) : base(MessagePriority.Default)
+        public NetFloatMessage(byte[] data) : base(MessagePriority.Default, null)
         {
             currentMessageType = MessageType.Float;
             this.data = Deserialize(data);
@@ -41,11 +41,6 @@ namespace Net
                 data = BitConverter.ToSingle(message, messageHeaderSize);
             }
             return data;
-        }
-
-        public List<int> GetMessageRoute()
-        {
-            return messageRoute;
         }
 
         public float GetData()

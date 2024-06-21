@@ -4,17 +4,18 @@ using System.Text;
 
 namespace Net
 {
-    class NetBoolMessage : BaseMessage<bool>
+    [NetMessageClass(typeof(NetFloatMessage), MessageType.Bool)]
+    class NetBoolMessage : BaseReflectionMessage<bool>
     {
         bool data;
 
-        public NetBoolMessage(MessagePriority messagePriority, bool data) : base(messagePriority)
+        public NetBoolMessage(MessagePriority messagePriority, bool data, List<int> messageRoute) : base(messagePriority, messageRoute)
         {
             currentMessageType = MessageType.Bool;
             this.data = data;
         }
 
-        public NetBoolMessage(byte[] data) : base(MessagePriority.Default)
+        public NetBoolMessage(byte[] data) : base(MessagePriority.Default, null)
         {
             currentMessageType = MessageType.Bool;
             this.data = Deserialize(data);

@@ -16,6 +16,7 @@ public class ReflectionSystem : MonoBehaviour
     {
         reflection = new(NetworkManager.Instance.networkEntity);
         reflection.consoleDebugger += WriteConsoleDebugger;
+        reflection.consoleDebuggerPause+= PauseConsoleDebugger;
     }
 
     private void LateUpdate()
@@ -24,6 +25,11 @@ public class ReflectionSystem : MonoBehaviour
         {
             reflection.UpdateReflection();
         }
+    }
+
+    void PauseConsoleDebugger()
+    {
+        Debug.Break();
     }
 
     void WriteConsoleDebugger(string message)
