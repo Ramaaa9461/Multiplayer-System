@@ -4,17 +4,18 @@ using System.Text;
 
 namespace Net
 {
-    class NetUShortMessage : BaseMessage<ushort>
+    [NetMessageClass(typeof(NetUShortMessage), MessageType.Ushort)]
+    class NetUShortMessage : BaseReflectionMessage<ushort>
     {
         ushort data;
 
-        public NetUShortMessage(MessagePriority messagePriority, ushort data) : base(messagePriority)
+        public NetUShortMessage(MessagePriority messagePriority, ushort data, List<int> messageRoute) : base(messagePriority, messageRoute)
         {
             currentMessageType = MessageType.Ushort;
             this.data = data;
         }
 
-        public NetUShortMessage(byte[] data) : base(MessagePriority.Default)
+        public NetUShortMessage(byte[] data) : base(MessagePriority.Default, new List<int>())
         {
             currentMessageType = MessageType.Ushort;
             this.data = Deserialize(data);

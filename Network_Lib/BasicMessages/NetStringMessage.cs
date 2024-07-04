@@ -4,17 +4,18 @@ using System.Text;
 
 namespace Net
 {
-    class NetStringMessage : BaseMessage<string>
+    [NetMessageClass(typeof(NetStringMessage), MessageType.String)]
+    class NetStringMessage : BaseReflectionMessage<string>
     {
         string data;
 
-        public NetStringMessage(MessagePriority messagePriority, string data) : base(messagePriority)
+        public NetStringMessage(MessagePriority messagePriority, string data, List<int> messageRoute) : base(messagePriority, messageRoute)
         {
             currentMessageType = MessageType.String;
             this.data = data;
         }
 
-        public NetStringMessage(byte[] data) : base(MessagePriority.Default)
+        public NetStringMessage(byte[] data) : base(MessagePriority.Default, new List<int>())
         {
             currentMessageType = MessageType.String;
             this.data = Deserialize(data);

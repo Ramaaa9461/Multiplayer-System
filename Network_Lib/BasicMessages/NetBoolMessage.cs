@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Net
 {
-    [NetMessageClass(typeof(NetFloatMessage), MessageType.Bool)]
+    [NetMessageClass(typeof(NetBoolMessage), MessageType.Bool)]
     class NetBoolMessage : BaseReflectionMessage<bool>
     {
         bool data;
@@ -15,7 +15,7 @@ namespace Net
             this.data = data;
         }
 
-        public NetBoolMessage(byte[] data) : base(MessagePriority.Default, null)
+        public NetBoolMessage(byte[] data) : base(MessagePriority.Default, new List<int>())
         {
             currentMessageType = MessageType.Bool;
             this.data = Deserialize(data);

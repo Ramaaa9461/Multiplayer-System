@@ -4,17 +4,18 @@ using System.Text;
 
 namespace Net
 {
-    class NetLongMessage : BaseMessage<long>
+    [NetMessageClass(typeof(NetLongMessage), MessageType.Long)]
+    class NetLongMessage : BaseReflectionMessage<long>
     {
         long data;
 
-        public NetLongMessage(MessagePriority messagePriority, long data) : base(messagePriority)
+        public NetLongMessage(MessagePriority messagePriority, long data, List<int> messageRoute) : base(messagePriority, messageRoute)
         {
             currentMessageType = MessageType.Long;
             this.data = data;
         }
 
-        public NetLongMessage(byte[] data) : base(MessagePriority.Default)
+        public NetLongMessage(byte[] data) : base(MessagePriority.Default, new List<int>())
         {
             currentMessageType = MessageType.Long;
             this.data = Deserialize(data);

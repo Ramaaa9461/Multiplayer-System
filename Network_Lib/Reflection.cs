@@ -46,7 +46,6 @@ namespace Net
 
         public void Inspect(Type type, object obj, List<int> idRoute)
         {
-
             if (obj != null)
             {
                 foreach (FieldInfo info in type.GetFields(bindingFlags))
@@ -57,8 +56,6 @@ namespace Net
                     {
                         if (attribute is NetVariable)
                         {
-
-
                             ReadValue(info, obj, (NetVariable)attribute, new List<int>(idRoute));
                         }
                     }
@@ -73,7 +70,7 @@ namespace Net
 
         public void ReadValue(FieldInfo info, object obj, NetVariable attribute, List<int> idRoute)
         {
-            if (info.FieldType.IsValueType || info.FieldType == typeof(string) || info.FieldType.IsEnum)
+            if (info.FieldType.IsValueType || info.FieldType == typeof(string) || info.FieldType.IsEnum) //TODO: Chequear esto a futuro
             {
                 idRoute.Add(attribute.VariableId);
 
@@ -87,15 +84,20 @@ namespace Net
                     debug += item + " - ";
                 }
 
-                //consoleDebugger.Invoke(debug);
+                consoleDebugger.Invoke(debug);
 
                 SendPackage(info, obj, attribute, idRoute);
             }
             else if (typeof(System.Collections.ICollection).IsAssignableFrom(info.FieldType))
             {
+                idRoute.Add(attribute.VariableId);
+
                 foreach (object item in (info.GetValue(obj) as System.Collections.ICollection))
                 {
-                    Inspect(item.GetType(), item, idRoute); //TODO: ver qe onda las colleciones, tiene qe agregarse a idRoute
+
+                        consoleDebugger.Invoke("Object: " + item + ", " + item.GetType() + ", " + info.GetValue(obj));
+                   // Inspect(item.GetType(), item, idRoute); //TODO: ver qe onda las colleciones, tiene qe agregarse a idRoute
+                  //  ReadValue(info, obj, attribute, new List<int>(idRoute));
                 }
             }
             else
@@ -111,7 +113,7 @@ namespace Net
 
             foreach (Type type in executeAssembly.GetTypes())
             {
-                if (type.BaseType != null && type.BaseType.IsGenericType && type.BaseType.GetGenericTypeDefinition() == typeof(BaseMessage<>))
+                if (type.BaseType != null && type.BaseType.IsGenericType && type.BaseType.GetGenericTypeDefinition() == typeof(BaseReflectionMessage<>))
                 {
                     Type[] genericTypes = type.BaseType.GetGenericArguments();
 
@@ -143,7 +145,7 @@ namespace Net
                                     debug += item + " - ";
                                 }
 
-                                //consoleDebugger.Invoke(debug);
+                               // consoleDebugger.Invoke(debug);
                             }
                         }
                     }
@@ -158,20 +160,51 @@ namespace Net
             switch (MessageChecker.CheckMessageType(data))
             {
                 case MessageType.Ulong:
+
+                    NetULongMessage netULongMessage = new NetULongMessage(data);
+                    VariableMapping(netULongMessage.GetMessageRoute(), netULongMessage.GetData());
+
                     break;
                 case MessageType.Uint:
+
+                    NetUIntMessage netUIntMessage = new NetUIntMessage(data);
+                    VariableMapping(netUIntMessage.GetMessageRoute(), netUIntMessage.GetData());
+
                     break;
                 case MessageType.Ushort:
+
+                    NetUShortMessage netUShortMessage = new NetUShortMessage(data);
+                    VariableMapping(netUShortMessage.GetMessageRoute(), netUShortMessage.GetData());
+
                     break;
                 case MessageType.String:
+
+                    NetStringMessage netStringMessage = new NetStringMessage(data);
+                    VariableMapping(netStringMessage.GetMessageRoute(), netStringMessage.GetData());
+
                     break;
                 case MessageType.Short:
+
+                    NetShortMessage netShortMessage = new NetShortMessage(data);
+                    VariableMapping(netShortMessage.GetMessageRoute(), netShortMessage.GetData());
+
                     break;
                 case MessageType.Sbyte:
+
+                    NetSByteMessage netSByteMessage = new NetSByteMessage(data);
+                    VariableMapping(netSByteMessage.GetMessageRoute(), netSByteMessage.GetData());
                     break;
                 case MessageType.Long:
+
+                    NetLongMessage netLongMessage = new NetLongMessage(data);
+                    VariableMapping(netLongMessage.GetMessageRoute(), netLongMessage.GetData());
+
                     break;
                 case MessageType.Int:
+
+                    NetIntMessage netIntMessage = new NetIntMessage(data);
+                    VariableMapping(netIntMessage.GetMessageRoute(), netIntMessage.GetData());
+
                     break;
                 case MessageType.Float:
 
@@ -180,12 +213,28 @@ namespace Net
 
                     break;
                 case MessageType.Double:
+
+                    NetDoubleMessage netDoubleMessage = new NetDoubleMessage(data);
+                    VariableMapping(netDoubleMessage.GetMessageRoute(), netDoubleMessage.GetData());
+
                     break;
                 case MessageType.Decimal:
+
+                    NetDecimalMessage netDecimalMessage = new NetDecimalMessage(data);
+                    VariableMapping(netDecimalMessage.GetMessageRoute(), netDecimalMessage.GetData());
+
                     break;
                 case MessageType.Char:
+
+                    NetCharMessage netCharMessage = new NetCharMessage(data);
+                    VariableMapping(netCharMessage.GetMessageRoute(), netCharMessage.GetData());
+
                     break;
                 case MessageType.Byte:
+
+                    NetByteMessage netByteMessage = new NetByteMessage(data);
+                    VariableMapping(netByteMessage.GetMessageRoute(), netByteMessage.GetData());
+
                     break;
                 case MessageType.Bool:
 
@@ -289,7 +338,7 @@ namespace Net
                     debug += item + " - ";
                 }
 
-                consoleDebugger.Invoke(debug);
+                //consoleDebugger.Invoke(debug);
                 info.SetValue(obj, value);
             }
             else if (typeof(System.Collections.ICollection).IsAssignableFrom(info.FieldType))

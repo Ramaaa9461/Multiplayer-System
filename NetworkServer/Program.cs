@@ -6,7 +6,7 @@ namespace NetworkServer
     {
         static void Main(string[] args)
         {
-            int port = 51000; // Valor predeterminado
+            int port = 50001; // Valor predeterminado
 
             if (args.Length > 0)
             {

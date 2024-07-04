@@ -4,17 +4,18 @@ using System.Text;
 
 namespace Net
 {
-    class NetDecimalMessage : BaseMessage<decimal>
+    [NetMessageClass(typeof(NetDecimalMessage), MessageType.Decimal)]
+    class NetDecimalMessage : BaseReflectionMessage<decimal>
     {
         decimal data;
 
-        public NetDecimalMessage(MessagePriority messagePriority, decimal data) : base(messagePriority)
+        public NetDecimalMessage(MessagePriority messagePriority, decimal data, List<int> messageRoute) : base(messagePriority, messageRoute)
         {
             currentMessageType = MessageType.Decimal;
             this.data = data;
         }
 
-        public NetDecimalMessage(byte[] data) : base(MessagePriority.Default)
+        public NetDecimalMessage(byte[] data) : base(MessagePriority.Default, new List<int>())
         {
             currentMessageType = MessageType.Decimal;
             this.data = Deserialize(data);

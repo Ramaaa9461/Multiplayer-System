@@ -4,8 +4,6 @@ using System.Text;
 
 namespace Net
 {
-
-
     [NetMessageClass(typeof(NetFloatMessage), MessageType.Float)]
     class NetFloatMessage : BaseReflectionMessage<float>
     {
@@ -17,7 +15,7 @@ namespace Net
             this.data = data;
         }
 
-        public NetFloatMessage(byte[] data) : base(MessagePriority.Default, null)
+        public NetFloatMessage(byte[] data) : base(MessagePriority.Default, new List<int>())
         {
             currentMessageType = MessageType.Float;
             this.data = Deserialize(data);
