@@ -9,13 +9,13 @@ namespace Net
     {
         decimal data;
 
-        public NetDecimalMessage(MessagePriority messagePriority, decimal data, List<int> messageRoute) : base(messagePriority, messageRoute)
+        public NetDecimalMessage(MessagePriority messagePriority, decimal data, List<RouteInfo> messageRoute) : base(messagePriority, messageRoute)
         {
             currentMessageType = MessageType.Decimal;
             this.data = data;
         }
 
-        public NetDecimalMessage(byte[] data) : base(MessagePriority.Default, new List<int>())
+        public NetDecimalMessage(byte[] data) : base(MessagePriority.Default, new List<RouteInfo>())
         {
             currentMessageType = MessageType.Decimal;
             this.data = Deserialize(data);

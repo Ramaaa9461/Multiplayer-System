@@ -9,13 +9,13 @@ namespace Net
     {
         sbyte data;
 
-        public NetSByteMessage(MessagePriority messagePriority, sbyte data, List<int> messageRoute) : base(messagePriority, messageRoute)
+        public NetSByteMessage(MessagePriority messagePriority, sbyte data, List<RouteInfo> messageRoute) : base(messagePriority, messageRoute)
         {
             currentMessageType = MessageType.Sbyte;
             this.data = data;
         }
 
-        public NetSByteMessage(byte[] data) : base(MessagePriority.Default, new List<int>())
+        public NetSByteMessage(byte[] data) : base(MessagePriority.Default, new List<RouteInfo>())
         {
             currentMessageType = MessageType.Sbyte;
             this.data = Deserialize(data);

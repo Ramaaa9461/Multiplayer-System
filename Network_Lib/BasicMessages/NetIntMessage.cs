@@ -9,13 +9,13 @@ namespace Net
     {
         int data;
 
-        public NetIntMessage(MessagePriority messagePriority, int data, List<int> messageRoute) : base(messagePriority, messageRoute)
+        public NetIntMessage(MessagePriority messagePriority, int data, List<RouteInfo> messageRoute) : base(messagePriority, messageRoute)
         {
             currentMessageType = MessageType.Int;
             this.data = data;
         }
 
-        public NetIntMessage(byte[] data) : base(MessagePriority.Default, new List<int>())
+        public NetIntMessage(byte[] data) : base(MessagePriority.Default, new List<RouteInfo>())
         {
             currentMessageType = MessageType.Int;
             this.data = Deserialize(data);

@@ -106,7 +106,7 @@ namespace Net
             currentMessagePriority = messagePriority;
         }
 
-        public void DeserializeHeader(byte[] message)
+       virtual public void DeserializeHeader(byte[] message)
         {
             currentMessageType = (MessageType)BitConverter.ToInt32(message, 0);
             currentMessagePriority = (MessagePriority)BitConverter.ToInt32(message, sizeof(int));
@@ -123,7 +123,7 @@ namespace Net
             }
         }
 
-        public void SerializeHeader(ref List<byte> outData)
+       virtual public void SerializeHeader(ref List<byte> outData)
         {
             outData.AddRange(BitConverter.GetBytes((int)currentMessageType));
             outData.AddRange(BitConverter.GetBytes((int)currentMessagePriority));

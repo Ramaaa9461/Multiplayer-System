@@ -9,13 +9,13 @@ namespace Net
     {
         long data;
 
-        public NetLongMessage(MessagePriority messagePriority, long data, List<int> messageRoute) : base(messagePriority, messageRoute)
+        public NetLongMessage(MessagePriority messagePriority, long data, List<RouteInfo> messageRoute) : base(messagePriority, messageRoute)
         {
             currentMessageType = MessageType.Long;
             this.data = data;
         }
 
-        public NetLongMessage(byte[] data) : base(MessagePriority.Default, new List<int>())
+        public NetLongMessage(byte[] data) : base(MessagePriority.Default, new List<RouteInfo>())
         {
             currentMessageType = MessageType.Long;
             this.data = Deserialize(data);

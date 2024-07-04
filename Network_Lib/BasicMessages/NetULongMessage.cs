@@ -9,13 +9,13 @@ namespace Net
     {
         ulong data;
 
-        public NetULongMessage(MessagePriority messagePriority, ulong data, List<int> messageRoute) : base(messagePriority, messageRoute)
+        public NetULongMessage(MessagePriority messagePriority, ulong data, List<RouteInfo> messageRoute) : base(messagePriority, messageRoute)
         {
             currentMessageType = MessageType.Ulong;
             this.data = data;
         }
 
-        public NetULongMessage(byte[] data) : base(MessagePriority.Default, new List<int>())
+        public NetULongMessage(byte[] data) : base(MessagePriority.Default, new List<RouteInfo>())
         {
             currentMessageType = MessageType.Ulong;
             this.data = Deserialize(data);

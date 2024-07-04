@@ -9,13 +9,13 @@ namespace Net
     {
         double data;
 
-        public NetDoubleMessage(MessagePriority messagePriority, double data, List<int> messageRoute) : base(messagePriority, messageRoute)
+        public NetDoubleMessage(MessagePriority messagePriority, double data, List<RouteInfo> messageRoute) : base(messagePriority, messageRoute)
         {
             currentMessageType = MessageType.Double;
             this.data = data;
         }
 
-        public NetDoubleMessage(byte[] data) : base(MessagePriority.Default, new List<int>())
+        public NetDoubleMessage(byte[] data) : base(MessagePriority.Default, new List<RouteInfo>())
         {
             currentMessageType = MessageType.Double;
             this.data = Deserialize(data);

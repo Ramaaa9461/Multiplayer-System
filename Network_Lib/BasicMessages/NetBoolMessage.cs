@@ -9,13 +9,13 @@ namespace Net
     {
         bool data;
 
-        public NetBoolMessage(MessagePriority messagePriority, bool data, List<int> messageRoute) : base(messagePriority, messageRoute)
+        public NetBoolMessage(MessagePriority messagePriority, bool data, List<RouteInfo> messageRoute) : base(messagePriority, messageRoute)
         {
             currentMessageType = MessageType.Bool;
             this.data = data;
         }
 
-        public NetBoolMessage(byte[] data) : base(MessagePriority.Default, new List<int>())
+        public NetBoolMessage(byte[] data) : base(MessagePriority.Default, new List<RouteInfo>())
         {
             currentMessageType = MessageType.Bool;
             this.data = Deserialize(data);

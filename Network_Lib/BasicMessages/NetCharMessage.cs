@@ -9,13 +9,13 @@ namespace Net
     {
         char data;
 
-        public NetCharMessage(MessagePriority messagePriority, char data, List<int> messageRoute) : base(messagePriority, messageRoute)
+        public NetCharMessage(MessagePriority messagePriority, char data, List<RouteInfo> messageRoute) : base(messagePriority, messageRoute)
         {
             currentMessageType = MessageType.Char;
             this.data = data;
         }
 
-        public NetCharMessage(byte[] data) : base(MessagePriority.Default, new List<int>())
+        public NetCharMessage(byte[] data) : base(MessagePriority.Default, new List<RouteInfo>())
         {
             currentMessageType = MessageType.Char;
             this.data = Deserialize(data);

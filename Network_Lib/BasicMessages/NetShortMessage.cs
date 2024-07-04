@@ -9,13 +9,13 @@ namespace Net
     {
         short data;
 
-        public NetShortMessage(MessagePriority messagePriority, short data, List<int> messageRoute) : base(messagePriority, messageRoute)
+        public NetShortMessage(MessagePriority messagePriority, short data, List<RouteInfo> messageRoute) : base(messagePriority, messageRoute)
         {
             currentMessageType = MessageType.Short;
             this.data = data;
         }
 
-        public NetShortMessage(byte[] data) : base(MessagePriority.Default, new List<int>())
+        public NetShortMessage(byte[] data) : base(MessagePriority.Default, new List<RouteInfo>())
         {
             currentMessageType = MessageType.Short;
             this.data = Deserialize(data);

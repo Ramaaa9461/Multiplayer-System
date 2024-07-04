@@ -2,20 +2,23 @@ using Net;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public class PlayerController : MonoBehaviour, INetObj
 {
-    [NetVariable(0)] List<int> test = new List<int>() { 0, 1, 2, 3, 4, 5, 6, 50 };
-    /*[NetVariable(0)]*/ public float health = 3;
+
+    //[NetVariable(0)] List<int> test = new List<int>() { 0, 1, 2, 3, 4, 5, 6, 50 };
+   [NetVariable(0), SerializeField] RouteInfo route = new RouteInfo(0);
+    /*[NetVariable(0)]*/
+    public float health = 3;
     [SerializeField/*, NetVariable(1)*/] TowerTurns towerTurns;   //Esta clase seria el punto de entrada para reflection de los players
     [SerializeField/*, NetVariable(2)*/] TankMovement movement; //Deberia contener todos los scripts que envien informacion por ej TowerTurns o movement si queremos enviar sus datos
 
-    
     [SerializeField] Transform cameraPivot;
-    
+
     public bool currentPlayer = false;
     public int clientID = -1;
 
-    NetObj netObj = new(-1,-1);
+    NetObj netObj = new(-1, -1);
 
     NetworkManager nm;
 
